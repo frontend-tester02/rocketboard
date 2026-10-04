@@ -10,6 +10,7 @@ import {
   baseSchemaPlugin,
 } from './common';
 import { envValidationSchema } from './config/env.validation';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { envValidationSchema } from './config/env.validation';
         },
       }),
     }),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
