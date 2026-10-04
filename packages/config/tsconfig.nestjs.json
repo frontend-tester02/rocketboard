@@ -2,7 +2,7 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "module": "CommonJS",
-    "moduleResolution": "Node",
+    "moduleResolution": "Node10",
     "target": "ES2022",
     "lib": ["ES2022"],
     "experimentalDecorators": true,
@@ -11,7 +11,7 @@
     "sourceMap": true,
     "outDir": "./dist",
     "noEmit": false,
-    "incremental": true,
+    "incremental": false,
     "isolatedModules": false,
     "noUncheckedIndexedAccess": false
   }
