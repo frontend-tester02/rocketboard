@@ -55,3 +55,14 @@ export async function forgotPassword(
 export async function resetPassword(input: ResetPasswordInput): Promise<void> {
   await apiClient.post('/auth/reset-password', input);
 }
+
+export async function lockSession(): Promise<void> {
+  await apiClient.post('/auth/lock');
+}
+
+export async function unlockSession(password: string): Promise<PublicUser> {
+  const { data } = await apiClient.post<Envelope<PublicUser>>('/auth/unlock', {
+    password,
+  });
+  return data.data;
+}

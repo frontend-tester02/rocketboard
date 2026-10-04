@@ -5,10 +5,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   forgotPassword,
   getMe,
+  lockSession,
   login,
   logout,
   register,
   resetPassword,
+  unlockSession,
 } from '@/features/auth/api';
 
 export const authKeys = {
@@ -51,6 +53,18 @@ export function useForgotPassword() {
 
 export function useResetPassword() {
   return useMutation({ mutationFn: resetPassword });
+}
+
+export function useLock() {
+  return useMutation({ mutationFn: lockSession });
+}
+
+export function useUnlock() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: unlockSession,
+    onSuccess: (user) => qc.setQueryData(authKeys.me, user),
+  });
 }
 
 export function useLogout() {

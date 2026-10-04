@@ -41,6 +41,10 @@ export class UsersService {
       .exec();
   }
 
+  async setLocked(id: string, isLocked: boolean): Promise<void> {
+    await this.userModel.updateOne({ _id: id }, { $set: { isLocked } }).exec();
+  }
+
   async setResetToken(
     id: string,
     hash: string,

@@ -13,6 +13,7 @@ import {
   loginSchema,
   registerSchema,
   resetPasswordSchema,
+  unlockSchema,
 } from '@rocket/shared';
 import type { Response } from 'express';
 import { CurrentUser, Public, ZodValidationPipe } from '../../common';
@@ -21,6 +22,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { UnlockDto } from './dto/unlock.dto';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import type { RefreshUser } from './types';
 
@@ -94,6 +96,33 @@ export class AuthController {
   ) {
     await this.auth.resetPassword(dto.token, dto.password);
     return { success: true, message: 'Password has been reset.' };
+  }
+
+  @HttpCode(200)
+  @Post('lock')
+  @ApiCookieAuth()
+  @ApiOperation({ summary: 'Lock the current session (lock screen)' })
+  async lock(
+    @CurrentUser('id') userId: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.auth.lock(userId);
+    this.auth.setLockedCookie(res);
+    return { success: true };
+  }
+
+  @HttpCode(200)
+  @Post('unlock')
+  @ApiCookieAuth()
+  @ApiOperation({ summary: 'Unlock the session with the account password' })
+  async unlock(
+    @CurrentUser('id') userId: string,
+    @Body(new ZodValidationPipe(unlockSchema)) dto: UnlockDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const user = await this.auth.unlock(userId, dto.password);
+    this.auth.clearLockedCookie(res);
+    return user;
   }
 
   @HttpCode(200)

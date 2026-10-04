@@ -1,32 +1,44 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 // Pages reachable without authentication.
-const AUTH_PAGES = [
+const PUBLIC_AUTH_PAGES = [
   '/login',
   '/register',
   '/forgot-password',
   '/reset-password',
-  '/lock-screen',
 ];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const hasToken = req.cookies.has('access_token');
-  const isAuthPage = AUTH_PAGES.some(
+  const isLocked = req.cookies.has('locked');
+  const isLockScreen = pathname === '/lock-screen';
+  const isPublicAuth = PUBLIC_AUTH_PAGES.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
   );
 
-  // Not signed in → send protected routes to /login (remembering the target).
-  if (!hasToken && !isAuthPage) {
+  // Not signed in.
+  if (!hasToken) {
+    if (isPublicAuth) return NextResponse.next();
+    // Protected routes (incl. /lock-screen) → login, remembering the target.
     const url = req.nextUrl.clone();
     url.pathname = '/login';
     url.search = '';
-    url.searchParams.set('redirect', pathname);
+    if (!isLockScreen) url.searchParams.set('redirect', pathname);
     return NextResponse.redirect(url);
   }
 
-  // Already signed in → keep users out of the auth pages.
-  if (hasToken && isAuthPage) {
+  // Signed in but locked → force the lock screen.
+  if (isLocked) {
+    if (isLockScreen) return NextResponse.next();
+    const url = req.nextUrl.clone();
+    url.pathname = '/lock-screen';
+    url.search = '';
+    return NextResponse.redirect(url);
+  }
+
+  // Signed in and unlocked → keep out of auth pages / lock screen.
+  if (isPublicAuth || isLockScreen) {
     const url = req.nextUrl.clone();
     url.pathname = '/dashboard';
     url.search = '';
@@ -37,6 +49,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  // Run on everything except Next internals and static files (those contain a dot).
   matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.).*)'],
 };

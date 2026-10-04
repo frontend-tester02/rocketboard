@@ -17,6 +17,7 @@ import type { AuthTokens, JwtPayload } from './types';
 
 const ACCESS_COOKIE = 'access_token';
 const REFRESH_COOKIE = 'refresh_token';
+const LOCKED_COOKIE = 'locked';
 const REFRESH_PATH = '/api/v1/auth';
 
 function parseDurationMs(input: string): number {
@@ -128,6 +129,20 @@ export class AuthService {
     return this.users.toPublic(user);
   }
 
+  async lock(userId: string): Promise<void> {
+    await this.users.setLocked(userId, true);
+  }
+
+  async unlock(userId: string, password: string): Promise<PublicUser> {
+    const user = await this.users.findById(userId, true);
+    if (!user || !(await argon2.verify(user.passwordHash, password))) {
+      throw new UnauthorizedException('Incorrect password');
+    }
+    await this.users.setLocked(userId, false);
+    user.isLocked = false;
+    return this.users.toPublic(user);
+  }
+
   private async issueSession(user: UserDocument) {
     const tokens = await this.issueTokens(user);
     const refreshHash = await argon2.hash(tokens.refreshToken);
@@ -170,10 +185,27 @@ export class AuthService {
       path: REFRESH_PATH,
       maxAge: parseDurationMs(this.config.get<string>('JWT_REFRESH_TTL', '7d')),
     });
+    // A fresh session is never locked.
+    res.clearCookie(LOCKED_COOKIE, { path: '/' });
   }
 
   clearAuthCookies(res: Response): void {
     res.clearCookie(ACCESS_COOKIE, { path: '/' });
     res.clearCookie(REFRESH_COOKIE, { path: REFRESH_PATH });
+    res.clearCookie(LOCKED_COOKIE, { path: '/' });
+  }
+
+  /** Flag read by the web middleware to force the lock screen. */
+  setLockedCookie(res: Response): void {
+    res.cookie(LOCKED_COOKIE, '1', {
+      httpOnly: true,
+      secure: this.config.get<string>('NODE_ENV') === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+  }
+
+  clearLockedCookie(res: Response): void {
+    res.clearCookie(LOCKED_COOKIE, { path: '/' });
   }
 }
