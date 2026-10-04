@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -7,7 +8,9 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import type { LoginInput, PublicUser, RegisterInput } from '@rocket/shared';
 import * as argon2 from 'argon2';
+import { createHash, randomBytes } from 'node:crypto';
 import type { CookieOptions, Response } from 'express';
+import { MailService } from '../mail/mail.service';
 import { UsersService } from '../users/users.service';
 import type { UserDocument } from '../users/schemas/user.schema';
 import type { AuthTokens, JwtPayload } from './types';
@@ -35,6 +38,7 @@ export class AuthService {
     private readonly users: UsersService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    private readonly mail: MailService,
   ) {}
 
   async register(dto: RegisterInput): Promise<{ user: PublicUser; tokens: AuthTokens }> {
@@ -75,6 +79,47 @@ export class AuthService {
 
   async logout(userId: string): Promise<void> {
     await this.users.setRefreshTokenHash(userId, null);
+  }
+
+  /**
+   * Starts password recovery. Always resolves the same way (no user
+   * enumeration). In dev, returns the token/link to ease testing.
+   */
+  async forgotPassword(
+    email: string,
+  ): Promise<{ devToken?: string; devLink?: string }> {
+    const user = await this.users.findByEmail(email);
+    if (!user) return {};
+
+    const token = randomBytes(32).toString('hex');
+    const hash = this.sha256(token);
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    await this.users.setResetToken(user.id as string, hash, expiresAt);
+
+    const link = `${this.config.get<string>(
+      'WEB_URL',
+      'http://localhost:3000',
+    )}/reset-password/${token}`;
+    await this.mail.sendPasswordReset(user.email, link);
+
+    if (this.config.get<string>('NODE_ENV') !== 'production') {
+      return { devToken: token, devLink: link };
+    }
+    return {};
+  }
+
+  /** Completes password recovery: validates the token and sets a new password. */
+  async resetPassword(token: string, password: string): Promise<void> {
+    const user = await this.users.findByResetTokenHash(this.sha256(token));
+    if (!user) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+    const passwordHash = await argon2.hash(password);
+    await this.users.resetPassword(user.id as string, passwordHash);
+  }
+
+  private sha256(input: string): string {
+    return createHash('sha256').update(input).digest('hex');
   }
 
   async me(userId: string): Promise<PublicUser> {

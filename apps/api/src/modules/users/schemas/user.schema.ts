@@ -45,6 +45,13 @@ export class User {
   @Prop({ select: false })
   refreshTokenHash?: string;
 
+  // SHA-256 hash of the active password-reset token (hidden), with expiry.
+  @Prop({ select: false })
+  resetTokenHash?: string;
+
+  @Prop({ select: false })
+  resetTokenExpiresAt?: Date;
+
   @Prop({ default: false })
   isLocked!: boolean;
 }

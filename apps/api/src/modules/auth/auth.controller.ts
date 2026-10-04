@@ -8,12 +8,19 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { loginSchema, registerSchema } from '@rocket/shared';
+import {
+  forgotPasswordSchema,
+  loginSchema,
+  registerSchema,
+  resetPasswordSchema,
+} from '@rocket/shared';
 import type { Response } from 'express';
 import { CurrentUser, Public, ZodValidationPipe } from '../../common';
 import { AuthService } from './auth.service';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import type { RefreshUser } from './types';
 
@@ -60,6 +67,33 @@ export class AuthController {
     const result = await this.auth.refresh(user.id, user.refreshToken);
     this.auth.setAuthCookies(res, result.tokens);
     return result.user;
+  }
+
+  @Public()
+  @HttpCode(200)
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Request a password reset link' })
+  async forgotPassword(
+    @Body(new ZodValidationPipe(forgotPasswordSchema)) dto: ForgotPasswordDto,
+  ) {
+    const dev = await this.auth.forgotPassword(dto.email);
+    return {
+      success: true,
+      message:
+        'If an account exists for that email, a reset link has been sent.',
+      ...dev,
+    };
+  }
+
+  @Public()
+  @HttpCode(200)
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Reset the password using a valid token' })
+  async resetPassword(
+    @Body(new ZodValidationPipe(resetPasswordSchema)) dto: ResetPasswordDto,
+  ) {
+    await this.auth.resetPassword(dto.token, dto.password);
+    return { success: true, message: 'Password has been reset.' };
   }
 
   @HttpCode(200)

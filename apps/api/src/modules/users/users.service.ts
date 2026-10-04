@@ -41,6 +41,43 @@ export class UsersService {
       .exec();
   }
 
+  async setResetToken(
+    id: string,
+    hash: string,
+    expiresAt: Date,
+  ): Promise<void> {
+    await this.userModel
+      .updateOne(
+        { _id: id },
+        { $set: { resetTokenHash: hash, resetTokenExpiresAt: expiresAt } },
+      )
+      .exec();
+  }
+
+  /** Find a user by a valid (non-expired) reset-token hash. */
+  findByResetTokenHash(hash: string) {
+    return this.userModel
+      .findOne({ resetTokenHash: hash, resetTokenExpiresAt: { $gt: new Date() } })
+      .exec();
+  }
+
+  /** Set a new password and invalidate reset token + all refresh sessions. */
+  async resetPassword(id: string, passwordHash: string): Promise<void> {
+    await this.userModel
+      .updateOne(
+        { _id: id },
+        {
+          $set: { passwordHash },
+          $unset: {
+            resetTokenHash: '',
+            resetTokenExpiresAt: '',
+            refreshTokenHash: '',
+          },
+        },
+      )
+      .exec();
+  }
+
   /** Map a user document to the safe, public shape returned by the api. */
   toPublic(user: UserDocument): PublicUser {
     return {
