@@ -163,3 +163,99 @@ export const categoryTransactions: CategoryTx[] = [
   { id: '4', category: 'medicine', title: 'Medicine', time: '02:00 pm · 19 August', amount: -850 },
   { id: '5', category: 'sport', title: 'Sport', time: '05:30 pm · 19 August', amount: -900 },
 ];
+
+// ── Dashboard #3 (projects) ───────────────────────────────────────────────
+
+export type TaskTileIcon = 'total' | 'new' | 'progress' | 'done';
+
+export interface TaskTileItem {
+  key: string;
+  label: string;
+  value: number;
+  change: number;
+  icon: TaskTileIcon;
+}
+
+export const taskTiles: TaskTileItem[] = [
+  { key: 'total', label: 'Total Tasks', value: 320, change: 12.5, icon: 'total' },
+  { key: 'new', label: 'New Tasks', value: 48, change: 8.2, icon: 'new' },
+  { key: 'progress', label: 'In Progress', value: 76, change: -3.4, icon: 'progress' },
+  { key: 'done', label: 'Completed', value: 196, change: 18.9, icon: 'done' },
+];
+
+export const projectsStatus = { ongoing: 24, hold: 8, done: 42 };
+
+export type TaskPeriod = 'day' | 'week' | 'month';
+export type TaskPriority = 'high' | 'medium' | 'low';
+
+export interface ActiveTask {
+  id: string;
+  title: string;
+  done: boolean;
+  priority: TaskPriority;
+  time: string;
+}
+
+export const activeTasks: Record<TaskPeriod, ActiveTask[]> = {
+  day: [
+    { id: 'd1', title: 'Finalize finance dashboard layout', done: true, priority: 'high', time: '09:00 am' },
+    { id: 'd2', title: 'Review chat panel interactions', done: false, priority: 'medium', time: '11:30 am' },
+    { id: 'd3', title: 'Sync card balances with API', done: false, priority: 'high', time: '02:00 pm' },
+    { id: 'd4', title: 'Prepare category breakdown', done: false, priority: 'low', time: '04:15 pm' },
+  ],
+  week: [
+    { id: 'w1', title: 'Ship Dashboard #3 widgets', done: false, priority: 'high', time: 'Mon' },
+    { id: 'w2', title: 'QA the orders table', done: true, priority: 'medium', time: 'Tue' },
+    { id: 'w3', title: 'Design projects gauge', done: true, priority: 'low', time: 'Wed' },
+    { id: 'w4', title: 'Wire activity timeline', done: false, priority: 'medium', time: 'Fri' },
+  ],
+  month: [
+    { id: 'm1', title: 'Launch E-Commerce module', done: false, priority: 'high', time: 'Week 1' },
+    { id: 'm2', title: 'Integrate notifications', done: false, priority: 'medium', time: 'Week 2' },
+    { id: 'm3', title: 'Calendar scheduling', done: true, priority: 'low', time: 'Week 3' },
+  ],
+};
+
+export const heatmapHours = ['08', '10', '12', '14', '16', '18', '20'];
+export const heatmapDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+// Rows = days, columns = hours; values 0–4 are the posting intensity.
+export const heatmap: number[][] = [
+  [1, 3, 4, 2, 3, 1, 0],
+  [0, 2, 3, 4, 2, 1, 1],
+  [2, 1, 3, 3, 4, 2, 0],
+  [1, 2, 2, 4, 3, 3, 1],
+  [0, 1, 4, 3, 2, 1, 2],
+  [1, 0, 2, 1, 2, 0, 1],
+  [0, 1, 1, 2, 1, 0, 0],
+];
+
+export interface ActivityItem {
+  id: string;
+  actor: string;
+  text: string;
+  time: string;
+}
+
+export interface ActivityGroup {
+  date: string;
+  items: ActivityItem[];
+}
+
+export const recentActivity: ActivityGroup[] = [
+  {
+    date: 'Today',
+    items: [
+      { id: 'a1', actor: 'Felecia Brown', text: 'commented on Finance Dashboard', time: '09:15 am' },
+      { id: 'a2', actor: 'Robert Edwards', text: 'completed task “Sync card balances”', time: '10:40 am' },
+      { id: 'a3', actor: 'Gloria Mckinney', text: 'uploaded 3 files to Projects', time: '12:05 pm' },
+    ],
+  },
+  {
+    date: 'Yesterday',
+    items: [
+      { id: 'a4', actor: 'Regina Cooper', text: 'created project “Rocket Admin”', time: '03:20 pm' },
+      { id: 'a5', actor: 'Randall Fisher', text: 'moved 5 tasks to In Progress', time: '05:00 pm' },
+    ],
+  },
+];
