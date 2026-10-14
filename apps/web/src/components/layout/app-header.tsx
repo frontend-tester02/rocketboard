@@ -2,6 +2,7 @@
 
 import { Bell, Menu, PanelLeft, Search } from 'lucide-react';
 import { UserMenu } from '@/components/layout/user-menu';
+import { ChatPanel } from '@/features/chat/chat-panel';
 import { useSidebarStore } from '@/store/sidebar-store';
 
 export function AppHeader() {
@@ -38,6 +39,7 @@ export function AppHeader() {
         >
           <Search className="size-5" />
         </button>
+        <ChatPanel />
         <button
           type="button"
           className="relative inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
