@@ -128,6 +128,12 @@ function NavGroup({
   const groupActive = itemActive(pathname, item);
   const [open, setOpen] = useState(groupActive);
 
+  // The most specific (longest) matching child href, so overlapping routes
+  // like "/dashboard" and "/dashboard/finance" highlight only one item.
+  const activeChildHref = (item.children ?? [])
+    .filter((c) => isActive(pathname, c.href))
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href;
+
   const trigger = (
     <button
       type="button"
@@ -173,7 +179,9 @@ function NavGroup({
       {!collapsed && open && (
         <div className="mt-1 flex flex-col gap-1 pl-11">
           {item.children?.map((child) => {
-            const active = isActive(pathname, child.href);
+            // Longest matching child wins, so "/dashboard" doesn't stay active
+            // while on "/dashboard/finance".
+            const active = child.href === activeChildHref;
             return (
               <Link
                 key={child.href}

@@ -105,3 +105,61 @@ export const transactions: TransactionRow[] = [
   { id: '4', name: 'Philip Henry', when: '10:00 am · 19 August', amount: 600, type: 'Payment' },
   { id: '5', name: 'Mitchel Cooper', when: '11:30 am · 19 August', amount: 900, type: 'Payment' },
 ];
+
+// ── Dashboard #2 (finance) ────────────────────────────────────────────────
+
+export interface SparkStat {
+  key: string;
+  label: string;
+  value: string;
+  change: number;
+  color: 'income' | 'expense';
+  data: number[];
+}
+
+export const sparkStats: SparkStat[] = [
+  { key: 'income', label: 'Total Income', value: '$8.500', change: 53.8, color: 'income', data: [8, 10, 7, 12, 9, 14, 13] },
+  { key: 'expense', label: 'Total Expense', value: '3.500K', change: -50.8, color: 'expense', data: [14, 11, 12, 8, 10, 6, 7] },
+  { key: 'bonus', label: 'Total Bonus', value: '5.100K', change: 24.3, color: 'income', data: [6, 8, 7, 10, 9, 12, 15] },
+];
+
+export const balance = {
+  amount: 27500,
+  income: 500,
+  spending: 300,
+  wave: [12, 18, 10, 22, 16, 26, 20, 30, 24].map((v, i) => ({ i, v })),
+};
+
+export const cardDetails: { label: string; value: string }[] = [
+  { label: 'Card Type', value: 'Visa' },
+  { label: 'Card Holder', value: 'Felecia Brown' },
+  { label: 'Expires', value: '12/19' },
+  { label: 'Card Number', value: '5880 5057 3258 8854' },
+  { label: 'Total Balance', value: '$80,700.00' },
+  { label: 'Total Debt', value: '$8,250.00' },
+];
+
+export const myCard = {
+  brand: 'VISA',
+  holder: 'Felecia Brown',
+  number: '5880 5057 3258 8854',
+  balance: 80700,
+};
+
+export type TxCategory = 'shopping' | 'travel' | 'food' | 'medicine' | 'sport';
+
+export interface CategoryTx {
+  id: string;
+  category: TxCategory;
+  title: string;
+  time: string;
+  amount: number;
+}
+
+export const categoryTransactions: CategoryTx[] = [
+  { id: '1', category: 'shopping', title: 'Shopping', time: '09:00 am · 19 August', amount: -1400 },
+  { id: '2', category: 'travel', title: 'Travel', time: '10:30 am · 19 August', amount: -850 },
+  { id: '3', category: 'food', title: 'Food', time: '12:15 pm · 19 August', amount: -2150 },
+  { id: '4', category: 'medicine', title: 'Medicine', time: '02:00 pm · 19 August', amount: -850 },
+  { id: '5', category: 'sport', title: 'Sport', time: '05:30 pm · 19 August', amount: -900 },
+];

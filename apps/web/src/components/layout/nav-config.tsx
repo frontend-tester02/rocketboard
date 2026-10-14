@@ -29,7 +29,14 @@ export interface NavItem {
 
 /** Sidebar navigation model. One source of truth for sidebar + mobile drawer. */
 export const navItems: NavItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  {
+    label: 'Dashboard',
+    icon: LayoutDashboard,
+    children: [
+      { label: 'Default', href: '/dashboard' },
+      { label: 'Finance', href: '/dashboard/finance' },
+    ],
+  },
   {
     label: 'E-Commerce',
     icon: ShoppingBag,
