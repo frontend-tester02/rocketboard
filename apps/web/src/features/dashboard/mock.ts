@@ -259,3 +259,35 @@ export const recentActivity: ActivityGroup[] = [
     ],
   },
 ];
+
+// ── Dashboard #4 (tasks) ──────────────────────────────────────────────────
+
+export interface MiniBarStatItem {
+  key: string;
+  label: string;
+  value: string;
+  change: number;
+  color: 'income' | 'expense';
+  data: number[];
+}
+
+export const miniBarStats: MiniBarStatItem[] = [
+  { key: 'completed', label: 'Completed Tasks', value: '196', change: 18.9, color: 'income', data: [4, 6, 5, 8, 7, 9, 11] },
+  { key: 'productivity', label: 'Productivity', value: '87%', change: 5.2, color: 'income', data: [6, 5, 7, 6, 8, 7, 9] },
+  { key: 'hours', label: 'Tracked Hours', value: '142h', change: -2.1, color: 'expense', data: [9, 7, 8, 6, 7, 5, 6] },
+];
+
+export interface ProjectProgressItem {
+  id: string;
+  label: string;
+  value: number;
+  total: number;
+  color: string;
+}
+
+export const totalProjects: ProjectProgressItem[] = [
+  { id: 'p1', label: 'UI/UX Design', value: 32, total: 40, color: 'hsl(var(--primary))' },
+  { id: 'p2', label: 'Development', value: 18, total: 30, color: 'hsl(var(--warning))' },
+  { id: 'p3', label: 'Marketing', value: 12, total: 20, color: 'hsl(var(--success))' },
+  { id: 'p4', label: 'Research', value: 6, total: 15, color: 'hsl(var(--danger))' },
+];

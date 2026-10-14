@@ -36,6 +36,7 @@ export const navItems: NavItem[] = [
       { label: 'Default', href: '/dashboard' },
       { label: 'Finance', href: '/dashboard/finance' },
       { label: 'Project Overview', href: '/dashboard/projects' },
+      { label: 'Tasks Overview', href: '/dashboard/tasks' },
     ],
   },
   {
