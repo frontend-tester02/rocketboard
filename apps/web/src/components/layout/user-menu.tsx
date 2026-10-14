@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, Lock, LogOut } from 'lucide-react';
+import { ChevronDown, Lock, LogOut, Settings, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { UserAvatar } from '@/components/common/user-avatar';
 import {
@@ -56,7 +56,15 @@ export function UserMenu() {
             </span>
           )}
         </DropdownMenuLabel>
-        {/* My Profile / Settings arrive in prompt 06. */}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => router.push('/profile')}>
+          <User />
+          My Profile
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => router.push('/profile?tab=settings')}>
+          <Settings />
+          Settings
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={handleLock}>
           <Lock />
