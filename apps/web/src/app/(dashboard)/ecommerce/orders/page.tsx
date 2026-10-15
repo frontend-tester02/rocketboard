@@ -1,10 +1,10 @@
-import { PlaceholderPage } from '@/components/common/placeholder-page';
+import { Suspense } from 'react';
+import { OrdersPageClient } from '@/features/orders/components/orders-page-client';
 
 export default function OrdersPage() {
   return (
-    <PlaceholderPage
-      title="Orders"
-      description="Track and fulfill customer orders."
-    />
+    <Suspense fallback={null}>
+      <OrdersPageClient />
+    </Suspense>
   );
 }
