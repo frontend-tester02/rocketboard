@@ -291,3 +291,100 @@ export const totalProjects: ProjectProgressItem[] = [
   { id: 'p3', label: 'Marketing', value: 12, total: 20, color: 'hsl(var(--success))' },
   { id: 'p4', label: 'Research', value: 6, total: 15, color: 'hsl(var(--danger))' },
 ];
+
+// ── Dashboard #5 (social) ─────────────────────────────────────────────────
+
+export interface ProfileInfoRow {
+  label: string;
+  value: string;
+}
+
+export const profileInfo: ProfileInfoRow[] = [
+  { label: 'Email', value: 'felecia.brown@rocket.io' },
+  { label: 'Phone', value: '+1 (704) 555-0127' },
+  { label: 'Location', value: 'Charlotte, NC' },
+  { label: 'Joined', value: 'March 2022' },
+];
+
+export interface PersonItem {
+  id: string;
+  name: string;
+  role: string;
+}
+
+export const favorites: PersonItem[] = [
+  { id: 'f1', name: 'Regina Cooper', role: 'Product Designer' },
+  { id: 'f2', name: 'Robert Edwards', role: 'Frontend Dev' },
+  { id: 'f3', name: 'Gloria Mckinney', role: 'Marketing Lead' },
+  { id: 'f4', name: 'Randall Fisher', role: 'QA Engineer' },
+];
+
+export type SocialStatIcon = 'visitors' | 'followers' | 'likes' | 'comments';
+
+export interface SocialStatItem {
+  key: string;
+  label: string;
+  value: string;
+  change: number;
+  icon: SocialStatIcon;
+}
+
+export const socialStats: SocialStatItem[] = [
+  { key: 'visitors', label: 'Visitors', value: '12.4K', change: 14.2, icon: 'visitors' },
+  { key: 'followers', label: 'Followers', value: '8.2K', change: 9.8, icon: 'followers' },
+  { key: 'likes', label: 'Likes', value: '24.6K', change: 21.5, icon: 'likes' },
+  { key: 'comments', label: 'Comments', value: '3.1K', change: -4.3, icon: 'comments' },
+];
+
+export interface VisitPoint {
+  name: string;
+  min: number;
+  avg: number;
+  max: number;
+}
+
+export const visits: VisitPoint[] = [
+  { name: 'Mon', min: 120, avg: 320, max: 540 },
+  { name: 'Tue', min: 180, avg: 420, max: 620 },
+  { name: 'Wed', min: 140, avg: 360, max: 500 },
+  { name: 'Thu', min: 220, avg: 480, max: 700 },
+  { name: 'Fri', min: 260, avg: 520, max: 760 },
+  { name: 'Sat', min: 200, avg: 440, max: 640 },
+  { name: 'Sun', min: 160, avg: 380, max: 560 },
+];
+
+export const visitsSummary = { min: '120', avg: '417', max: '760' };
+
+export interface FollowerSource {
+  name: string;
+  value: number;
+  color: string;
+}
+
+export const followerSources: FollowerSource[] = [
+  { name: 'Instagram', value: 42, color: 'hsl(var(--primary))' },
+  { name: 'Facebook', value: 28, color: 'hsl(var(--warning))' },
+  { name: 'Twitter', value: 18, color: 'hsl(var(--success))' },
+  { name: 'Other', value: 12, color: 'hsl(var(--danger))' },
+];
+
+export interface GrowthPoint {
+  name: string;
+  value: number;
+}
+
+export const followersGrowth: GrowthPoint[] = [
+  { name: 'Jan', value: 2400 },
+  { name: 'Feb', value: 3200 },
+  { name: 'Mar', value: 2800 },
+  { name: 'Apr', value: 4100 },
+  { name: 'May', value: 3600 },
+  { name: 'Jun', value: 4800 },
+];
+
+export const newFollowers: PersonItem[] = [
+  { id: 'nf1', name: 'Judith Black', role: 'UX Researcher' },
+  { id: 'nf2', name: 'Philip Henry', role: 'Data Analyst' },
+  { id: 'nf3', name: 'Devon Williamson', role: 'Backend Dev' },
+  { id: 'nf4', name: 'Debra Wilson', role: 'Content Writer' },
+];
