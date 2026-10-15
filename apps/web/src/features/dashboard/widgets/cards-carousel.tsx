@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { walletCards } from '@/features/dashboard/mock';
+import { useWalletCardsStore } from '@/features/dashboard/wallet-cards-store';
 import { cn, formatCurrency } from '@/lib/utils';
 
 export function CardsCarousel() {
+  const walletCards = useWalletCardsStore((s) => s.cards);
   const [active, setActive] = useState(0);
-  const card = walletCards[active]!;
+  const card = walletCards[Math.min(active, walletCards.length - 1)]!;
 
   return (
     <div className="flex flex-col gap-4">

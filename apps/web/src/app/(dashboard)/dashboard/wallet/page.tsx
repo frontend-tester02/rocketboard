@@ -1,5 +1,6 @@
 import { PageHeader } from '@/components/common/page-header';
 import { PeriodSelect } from '@/components/common/period-select';
+import { AddCardModal } from '@/features/dashboard/widgets/add-card-modal';
 import { BalanceLineChart } from '@/features/dashboard/widgets/balance-line-chart';
 import { CardsCarousel } from '@/features/dashboard/widgets/cards-carousel';
 import { IncomeSpentCards } from '@/features/dashboard/widgets/income-spent-cards';
@@ -26,6 +27,10 @@ export default function WalletDashboardPage() {
 
       {/* Right panel */}
       <aside className="flex w-full shrink-0 flex-col gap-5 xl:w-80">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold">My Cards</h3>
+          <AddCardModal />
+        </div>
         <CardsCarousel />
         <WalletContactsList />
       </aside>
