@@ -7,9 +7,9 @@ import { useCallback, useMemo, useState } from 'react';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { ExportMenu } from '@/components/common/export-menu';
 import { PageHeader } from '@/components/common/page-header';
-import { SearchInput } from '@/components/common/search-input';
 import { Button } from '@/components/ui/button';
 import { ProductsFilter } from '@/features/products/components/products-filter';
+import { ProductsSearch } from '@/features/products/components/products-search';
 import { ProductsGrid } from '@/features/products/components/products-grid';
 import { ProductsTable } from '@/features/products/components/products-table';
 import {
@@ -135,10 +135,10 @@ export function ProductsPageClient() {
 
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2">
-        <SearchInput
+        <ProductsSearch
           value={state.search}
           onChange={(v) => setParams({ search: v || undefined })}
-          placeholder="Search products…"
+          categoryName={categoryName}
           className="w-full sm:max-w-xs"
         />
         <ProductsFilter

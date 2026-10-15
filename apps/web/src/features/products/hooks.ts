@@ -36,6 +36,16 @@ export function useProducts(query: ProductsQuery) {
   });
 }
 
+/** Lightweight top-matches query for the search autocomplete dropdown. */
+export function useProductSuggestions(term: string) {
+  return useQuery({
+    queryKey: ['products', 'suggest', term] as const,
+    queryFn: () => listProducts({ search: term, limit: 6, page: 1 }),
+    enabled: term.trim().length > 0,
+    placeholderData: keepPreviousData,
+  });
+}
+
 export function useProductCounts() {
   return useQuery({
     queryKey: productKeys.counts(),
