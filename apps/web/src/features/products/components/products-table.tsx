@@ -26,6 +26,7 @@ interface ProductsTableProps {
   categoryName: (id?: string) => string;
   onDelete: (product: ProductDto) => void;
   onEdit: (product: ProductDto) => void;
+  onView: (product: ProductDto) => void;
 }
 
 export function ProductsTable({
@@ -36,6 +37,7 @@ export function ProductsTable({
   categoryName,
   onDelete,
   onEdit,
+  onView,
 }: ProductsTableProps) {
   const columns = useMemo<ColumnDef<ProductDto>[]>(
     () => [
@@ -109,7 +111,7 @@ export function ProductsTable({
                 <MoreHorizontal className="size-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => onView(row.original)}>
                   <Eye className="size-4" />
                   View
                 </DropdownMenuItem>
@@ -130,7 +132,7 @@ export function ProductsTable({
         ),
       },
     ],
-    [categoryName, onDelete, onEdit],
+    [categoryName, onDelete, onEdit, onView],
   );
 
   return (

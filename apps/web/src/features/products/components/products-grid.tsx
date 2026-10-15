@@ -17,6 +17,7 @@ interface ProductsGridProps {
   categoryName: (id?: string) => string;
   onDelete: (product: ProductDto) => void;
   onEdit: (product: ProductDto) => void;
+  onView: (product: ProductDto) => void;
   selected: Record<string, boolean>;
   onToggleSelect: (id: string, value: boolean) => void;
 }
@@ -26,6 +27,7 @@ export function ProductsGrid({
   categoryName,
   onDelete,
   onEdit,
+  onView,
   selected,
   onToggleSelect,
 }: ProductsGridProps) {
@@ -86,7 +88,9 @@ export function ProductsGrid({
                     <MoreHorizontal className="size-4" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>View</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => onView(product)}>
+                      View
+                    </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => onEdit(product)}>
                       Edit
                     </DropdownMenuItem>

@@ -3,6 +3,7 @@
 import type { ProductDto } from '@rocket/shared';
 import type { OnChangeFn, PaginationState } from '@tanstack/react-table';
 import { LayoutGrid, List } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { ExportMenu } from '@/components/common/export-menu';
@@ -31,6 +32,7 @@ const tabs: { value: ProductTab; label: string; countKey: 'all' | 'available' | 
 ];
 
 export function ProductsPageClient() {
+  const router = useRouter();
   const { state, setParams, query } = useProductsUrlState();
   const productsQuery = useProducts(query);
   const countsQuery = useProductCounts();
@@ -44,6 +46,11 @@ export function ProductsPageClient() {
   const toggleGridSelect = useCallback((id: string, value: boolean) => {
     setGridSelected((prev) => ({ ...prev, [id]: value }));
   }, []);
+
+  const onView = useCallback(
+    (product: ProductDto) => router.push(`/ecommerce/products/${product.id}`),
+    [router],
+  );
 
   const categoryName = useCallback(
     (id?: string) => {
@@ -178,6 +185,7 @@ export function ProductsPageClient() {
           categoryName={categoryName}
           onDelete={setToDelete}
           onEdit={setEditing}
+          onView={onView}
           selected={gridSelected}
           onToggleSelect={toggleGridSelect}
         />
@@ -190,6 +198,7 @@ export function ProductsPageClient() {
           categoryName={categoryName}
           onDelete={setToDelete}
           onEdit={setEditing}
+          onView={onView}
         />
       )}
 
