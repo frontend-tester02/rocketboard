@@ -1,22 +1,7 @@
-import {
-  Dumbbell,
-  Pill,
-  Plane,
-  ShoppingBag,
-  UtensilsCrossed,
-  type LucideIcon,
-} from 'lucide-react';
 import { Card } from '@/components/common/card';
-import { categoryTransactions, type TxCategory } from '@/features/dashboard/mock';
+import { categoryMeta } from '@/features/dashboard/category-meta';
+import { categoryTransactions } from '@/features/dashboard/mock';
 import { cn } from '@/lib/utils';
-
-const meta: Record<TxCategory, { icon: LucideIcon; className: string }> = {
-  shopping: { icon: ShoppingBag, className: 'bg-primary/10 text-primary' },
-  travel: { icon: Plane, className: 'bg-warning/15 text-warning' },
-  food: { icon: UtensilsCrossed, className: 'bg-success/10 text-success' },
-  medicine: { icon: Pill, className: 'bg-danger/10 text-danger' },
-  sport: { icon: Dumbbell, className: 'bg-muted text-muted-foreground' },
-};
 
 function amountLabel(amount: number): string {
   const sign = amount >= 0 ? '+' : '-';
@@ -27,7 +12,7 @@ export function CategoryTransactionsList() {
   return (
     <Card title="Transactions" menu bodyClassName="flex flex-col">
       {categoryTransactions.map((tx, i) => {
-        const { icon: Icon, className } = meta[tx.category];
+        const { icon: Icon, className } = categoryMeta[tx.category];
         return (
           <div
             key={tx.id}

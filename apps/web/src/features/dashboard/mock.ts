@@ -451,3 +451,72 @@ export const onlineUsers: FollowerSource[] = [
   { name: 'iOS', value: 27, color: 'hsl(var(--warning))' },
   { name: 'Android', value: 15, color: 'hsl(var(--success))' },
 ];
+
+// ── Dashboard #6 (wallet) ─────────────────────────────────────────────────
+
+export const walletSummary = {
+  income: { value: 24500, change: 12.4 },
+  spent: { value: 8750, change: -3.8 },
+};
+
+export const balanceSeries: { name: string; value: number }[] = [
+  { name: 'Jan', value: 12000 },
+  { name: 'Feb', value: 15800 },
+  { name: 'Mar', value: 14200 },
+  { name: 'Apr', value: 19600 },
+  { name: 'May', value: 17400 },
+  { name: 'Jun', value: 22800 },
+  { name: 'Jul', value: 27500 },
+];
+
+export const payments: CategoryTx[] = [
+  { id: 'pm1', category: 'shopping', title: 'Amazon', time: 'Subscription · 18 Aug', amount: -129 },
+  { id: 'pm2', category: 'travel', title: 'Uber', time: 'Transport · 17 Aug', amount: -42 },
+  { id: 'pm3', category: 'food', title: 'Starbucks', time: 'Food & Drink · 17 Aug', amount: -18 },
+  { id: 'pm4', category: 'medicine', title: 'Pharmacy', time: 'Health · 16 Aug', amount: -64 },
+  { id: 'pm5', category: 'sport', title: 'Gym Membership', time: 'Fitness · 15 Aug', amount: -55 },
+];
+
+export interface WalletCard {
+  id: string;
+  brand: string;
+  holder: string;
+  number: string;
+  balance: number;
+  gradient: string;
+}
+
+export const walletCards: WalletCard[] = [
+  {
+    id: 'wc1',
+    brand: 'VISA',
+    holder: 'Felecia Brown',
+    number: '5880 5057 3258 8854',
+    balance: 80700,
+    gradient: 'from-primary to-indigo-600',
+  },
+  {
+    id: 'wc2',
+    brand: 'Mastercard',
+    holder: 'Felecia Brown',
+    number: '4012 8888 1881 7210',
+    balance: 24300,
+    gradient: 'from-slate-800 to-slate-600',
+  },
+  {
+    id: 'wc3',
+    brand: 'VISA',
+    holder: 'Felecia Brown',
+    number: '6011 0009 9013 9424',
+    balance: 12850,
+    gradient: 'from-warning to-orange-600',
+  },
+];
+
+export const walletContacts: PersonItem[] = [
+  { id: 'wct1', name: 'Regina Cooper', role: '@regina' },
+  { id: 'wct2', name: 'Robert Edwards', role: '@robert' },
+  { id: 'wct3', name: 'Gloria Mckinney', role: '@gloria' },
+  { id: 'wct4', name: 'Randall Fisher', role: '@randall' },
+  { id: 'wct5', name: 'Judith Black', role: '@judith' },
+];
