@@ -2,13 +2,14 @@
 
 import type { ProductDto } from '@rocket/shared';
 import type { OnChangeFn, PaginationState } from '@tanstack/react-table';
-import { LayoutGrid, List, Plus, SlidersHorizontal } from 'lucide-react';
+import { LayoutGrid, List, Plus } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { ExportMenu } from '@/components/common/export-menu';
 import { PageHeader } from '@/components/common/page-header';
 import { SearchInput } from '@/components/common/search-input';
 import { Button } from '@/components/ui/button';
+import { ProductsFilter } from '@/features/products/components/products-filter';
 import { ProductsGrid } from '@/features/products/components/products-grid';
 import { ProductsTable } from '@/features/products/components/products-table';
 import {
@@ -64,6 +65,15 @@ export function ProductsPageClient() {
 
   const products = productsQuery.data?.data ?? [];
   const total = productsQuery.data?.meta.total ?? 0;
+
+  // Filters that live in the popover (status lives in the tabs, counted separately).
+  const activeFilterCount = [
+    state.category,
+    state.priceMin,
+    state.priceMax,
+    state.dateFrom,
+    state.dateTo,
+  ].filter((v) => v !== undefined).length;
 
   function confirmDelete() {
     if (!toDelete) return;
@@ -126,14 +136,11 @@ export function ProductsPageClient() {
           placeholder="Search products…"
           className="w-full sm:max-w-xs"
         />
-        <button
-          type="button"
-          className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/60 bg-background px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          aria-label="Filter"
-        >
-          <SlidersHorizontal className="size-4" />
-          Filter
-        </button>
+        <ProductsFilter
+          state={state}
+          onApply={(updates) => setParams(updates)}
+          activeCount={activeFilterCount}
+        />
 
         <div className="ml-auto flex items-center gap-1 rounded-lg border border-border/60 bg-background p-0.5">
           <ViewToggle
