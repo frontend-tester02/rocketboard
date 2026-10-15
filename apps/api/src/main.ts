@@ -1,17 +1,27 @@
+import { join } from 'node:path';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const config = app.get(ConfigService);
 
   app.setGlobalPrefix('api/v1');
 
-  app.use(helmet());
+  // Serve uploaded images (dev disk storage) outside the /api/v1 prefix.
+  app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads/' });
+
+  app.use(
+    helmet({
+      // Allow cross-origin <img> loading of uploaded files from the web app.
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
   app.use(cookieParser());
   app.enableCors({
     origin: config.get<string>('WEB_URL', 'http://localhost:3000'),

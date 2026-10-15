@@ -7,7 +7,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { ExportMenu } from '@/components/common/export-menu';
 import { PageHeader } from '@/components/common/page-header';
-import { AddProductDrawer } from '@/features/products/components/add-product-drawer';
+import { ProductFormModal } from '@/features/products/components/product-form-modal';
 import { ProductsFilter } from '@/features/products/components/products-filter';
 import { ProductsSearch } from '@/features/products/components/products-search';
 import { ProductsGrid } from '@/features/products/components/products-grid';
@@ -38,6 +38,7 @@ export function ProductsPageClient() {
   const deleteProduct = useDeleteProduct();
 
   const [toDelete, setToDelete] = useState<ProductDto | null>(null);
+  const [editing, setEditing] = useState<ProductDto | null>(null);
   const [gridSelected, setGridSelected] = useState<Record<string, boolean>>({});
 
   const toggleGridSelect = useCallback((id: string, value: boolean) => {
@@ -92,7 +93,7 @@ export function ProductsPageClient() {
         actions={
           <>
             <ExportMenu />
-            <AddProductDrawer />
+            <ProductFormModal />
           </>
         }
       />
@@ -176,6 +177,7 @@ export function ProductsPageClient() {
           data={products}
           categoryName={categoryName}
           onDelete={setToDelete}
+          onEdit={setEditing}
           selected={gridSelected}
           onToggleSelect={toggleGridSelect}
         />
@@ -187,8 +189,16 @@ export function ProductsPageClient() {
           onPaginationChange={onPaginationChange}
           categoryName={categoryName}
           onDelete={setToDelete}
+          onEdit={setEditing}
         />
       )}
+
+      {/* Edit modal (reuses the tabbed Add Product form) */}
+      <ProductFormModal
+        product={editing}
+        open={editing !== null}
+        onOpenChange={(o) => !o && setEditing(null)}
+      />
 
       <ConfirmDialog
         open={toDelete !== null}

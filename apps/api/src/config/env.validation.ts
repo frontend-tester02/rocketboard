@@ -11,6 +11,8 @@ export const envValidationSchema = Joi.object({
     .default('development'),
   PORT: Joi.number().port().default(4000),
   WEB_URL: Joi.string().uri().default('http://localhost:3000'),
+  /** Public base URL of this API, used to build absolute upload URLs. */
+  APP_URL: Joi.string().uri().default('http://localhost:4000'),
 
   // Database
   MONGO_URI: Joi.string().required(),

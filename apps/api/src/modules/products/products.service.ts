@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   ProductStatus,
@@ -62,16 +62,29 @@ export class ProductsService {
     return product;
   }
 
-  create(data: CreateProduct) {
+  async create(data: CreateProduct) {
+    await this.ensureSkuUnique(data.sku);
     return this.productModel.create(data);
   }
 
   async update(id: string, data: UpdateProduct) {
+    if (data.sku) await this.ensureSkuUnique(data.sku, id);
     const product = await this.productModel
       .findByIdAndUpdate(id, data, { new: true })
       .exec();
     if (!product) throw new NotFoundException('Product not found');
     return product;
+  }
+
+  /** Reject a SKU already used by another product (unique constraint). */
+  private async ensureSkuUnique(sku: string, excludeId?: string): Promise<void> {
+    const existing = await this.productModel
+      .findOne({ sku })
+      .select('_id')
+      .exec();
+    if (existing && existing.id !== excludeId) {
+      throw new ConflictException('A product with this SKU already exists');
+    }
   }
 
   async remove(id: string): Promise<void> {

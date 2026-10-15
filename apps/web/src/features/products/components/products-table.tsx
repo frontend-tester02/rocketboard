@@ -25,6 +25,7 @@ interface ProductsTableProps {
   onPaginationChange: OnChangeFn<PaginationState>;
   categoryName: (id?: string) => string;
   onDelete: (product: ProductDto) => void;
+  onEdit: (product: ProductDto) => void;
 }
 
 export function ProductsTable({
@@ -34,6 +35,7 @@ export function ProductsTable({
   onPaginationChange,
   categoryName,
   onDelete,
+  onEdit,
 }: ProductsTableProps) {
   const columns = useMemo<ColumnDef<ProductDto>[]>(
     () => [
@@ -111,7 +113,7 @@ export function ProductsTable({
                   <Eye className="size-4" />
                   View
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => onEdit(row.original)}>
                   <Pencil className="size-4" />
                   Edit
                 </DropdownMenuItem>
@@ -128,7 +130,7 @@ export function ProductsTable({
         ),
       },
     ],
-    [categoryName, onDelete],
+    [categoryName, onDelete, onEdit],
   );
 
   return (
