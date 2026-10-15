@@ -5,3 +5,5 @@ export * from './enums';
 export * from './pagination';
 export * from './api-error';
 export * from './auth';
+export * from './categories';
+export * from './products';

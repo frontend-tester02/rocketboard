@@ -11,6 +11,8 @@ import {
 } from './common';
 import { envValidationSchema } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { ProductsModule } from './modules/products/products.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { AuthModule } from './modules/auth/auth.module';
       }),
     }),
     AuthModule,
+    CategoriesModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [

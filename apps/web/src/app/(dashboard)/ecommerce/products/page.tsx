@@ -1,10 +1,10 @@
-import { PlaceholderPage } from '@/components/common/placeholder-page';
+import { Suspense } from 'react';
+import { ProductsPageClient } from '@/features/products/components/products-page-client';
 
 export default function ProductsPage() {
   return (
-    <PlaceholderPage
-      title="Products"
-      description="Manage your product catalog."
-    />
+    <Suspense fallback={null}>
+      <ProductsPageClient />
+    </Suspense>
   );
 }
