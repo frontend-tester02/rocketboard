@@ -38,6 +38,7 @@ export const navItems: NavItem[] = [
       { label: 'Project Overview', href: '/dashboard/projects' },
       { label: 'Tasks Overview', href: '/dashboard/tasks' },
       { label: 'Social', href: '/dashboard/social' },
+      { label: 'Analytics', href: '/dashboard/analytics' },
     ],
   },
   {

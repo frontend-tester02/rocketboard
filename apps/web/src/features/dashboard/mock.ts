@@ -388,3 +388,66 @@ export const newFollowers: PersonItem[] = [
   { id: 'nf3', name: 'Devon Williamson', role: 'Backend Dev' },
   { id: 'nf4', name: 'Debra Wilson', role: 'Content Writer' },
 ];
+
+// ── Dashboard #5 V.2 (analytics) ──────────────────────────────────────────
+
+export interface TopSourceRow {
+  name: string;
+  sessions: string;
+  pct: number;
+}
+
+export interface TopSourceGroup {
+  key: string;
+  title: string;
+  rows: TopSourceRow[];
+}
+
+export const topSources: TopSourceGroup[] = [
+  {
+    key: 'browser',
+    title: 'Top Browsers',
+    rows: [
+      { name: 'Chrome', sessions: '8.2K', pct: 62 },
+      { name: 'Safari', sessions: '3.1K', pct: 23 },
+      { name: 'Firefox', sessions: '1.2K', pct: 9 },
+      { name: 'Edge', sessions: '0.8K', pct: 6 },
+    ],
+  },
+  {
+    key: 'platform',
+    title: 'Top Platforms',
+    rows: [
+      { name: 'Windows', sessions: '6.4K', pct: 48 },
+      { name: 'macOS', sessions: '3.8K', pct: 29 },
+      { name: 'Linux', sessions: '1.9K', pct: 14 },
+      { name: 'Other', sessions: '1.2K', pct: 9 },
+    ],
+  },
+  {
+    key: 'country',
+    title: 'Top Countries',
+    rows: [
+      { name: 'United States', sessions: '5.1K', pct: 39 },
+      { name: 'United Kingdom', sessions: '2.7K', pct: 21 },
+      { name: 'Germany', sessions: '2.2K', pct: 17 },
+      { name: 'India', sessions: '1.8K', pct: 14 },
+    ],
+  },
+  {
+    key: 'search',
+    title: 'Search Engines',
+    rows: [
+      { name: 'Google', sessions: '9.4K', pct: 71 },
+      { name: 'Bing', sessions: '1.6K', pct: 12 },
+      { name: 'DuckDuckGo', sessions: '1.1K', pct: 8 },
+      { name: 'Yahoo', sessions: '0.7K', pct: 5 },
+    ],
+  },
+];
+
+export const onlineUsers: FollowerSource[] = [
+  { name: 'Web', value: 58, color: 'hsl(var(--primary))' },
+  { name: 'iOS', value: 27, color: 'hsl(var(--warning))' },
+  { name: 'Android', value: 15, color: 'hsl(var(--success))' },
+];

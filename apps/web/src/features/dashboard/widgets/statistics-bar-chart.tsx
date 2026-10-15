@@ -31,7 +31,16 @@ function Legend() {
   );
 }
 
-export function StatisticsBarChart() {
+export function StatisticsBarChart({ stacked = false }: { stacked?: boolean }) {
+  const stackId = stacked ? 'a' : undefined;
+  const barSize = stacked ? 24 : 9;
+  const incomeRadius = stacked
+    ? ([0, 0, 0, 0] as [number, number, number, number])
+    : ([8, 8, 8, 8] as [number, number, number, number]);
+  const expenseRadius = stacked
+    ? ([8, 8, 0, 0] as [number, number, number, number])
+    : ([8, 8, 8, 8] as [number, number, number, number]);
+
   return (
     <Card
       title="Statistics"
@@ -58,8 +67,8 @@ export function StatisticsBarChart() {
             tick={{ fill: chartColors.axis, fontSize: 12 }}
           />
           <Tooltip cursor={{ fill: 'transparent' }} content={<ChartTooltip />} />
-          <Bar dataKey="income" fill={chartColors.income} radius={[8, 8, 8, 8]} barSize={9} />
-          <Bar dataKey="expense" fill={chartColors.expense} radius={[8, 8, 8, 8]} barSize={9} />
+          <Bar dataKey="income" stackId={stackId} fill={chartColors.income} radius={incomeRadius} barSize={barSize} />
+          <Bar dataKey="expense" stackId={stackId} fill={chartColors.expense} radius={expenseRadius} barSize={barSize} />
         </BarChart>
       </ResponsiveContainer>
     </Card>
