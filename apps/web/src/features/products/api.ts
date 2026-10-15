@@ -1,6 +1,6 @@
 import type {
   CategoryDto,
-  CreateProduct,
+  CreateProductInput,
   PaginatedResponse,
   ProductCounts,
   ProductDto,
@@ -63,7 +63,9 @@ export async function getProduct(id: string): Promise<ProductDto> {
   return data.data;
 }
 
-export async function createProduct(input: CreateProduct): Promise<ProductDto> {
+export async function createProduct(
+  input: CreateProductInput,
+): Promise<ProductDto> {
   const { data } = await apiClient.post<Envelope<ProductDto>>(
     '/products',
     input,

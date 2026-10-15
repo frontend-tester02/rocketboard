@@ -2,12 +2,12 @@
 
 import type { ProductDto } from '@rocket/shared';
 import type { OnChangeFn, PaginationState } from '@tanstack/react-table';
-import { LayoutGrid, List, Plus } from 'lucide-react';
+import { LayoutGrid, List } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { ExportMenu } from '@/components/common/export-menu';
 import { PageHeader } from '@/components/common/page-header';
-import { Button } from '@/components/ui/button';
+import { AddProductDrawer } from '@/features/products/components/add-product-drawer';
 import { ProductsFilter } from '@/features/products/components/products-filter';
 import { ProductsSearch } from '@/features/products/components/products-search';
 import { ProductsGrid } from '@/features/products/components/products-grid';
@@ -92,10 +92,7 @@ export function ProductsPageClient() {
         actions={
           <>
             <ExportMenu />
-            <Button className="gap-1.5">
-              <Plus className="size-4" />
-              Add Product
-            </Button>
+            <AddProductDrawer />
           </>
         }
       />
