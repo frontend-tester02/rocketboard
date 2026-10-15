@@ -8,10 +8,11 @@
  */
 import { getModelToken } from '@nestjs/mongoose';
 import { NestFactory } from '@nestjs/core';
-import { ProductStatus } from '@rocket/shared';
+import { OrderStatus, PaymentType, ProductStatus } from '@rocket/shared';
 import type { Model } from 'mongoose';
 import { AppModule } from './app.module';
 import { Category } from './modules/categories/schemas/category.schema';
+import { Order } from './modules/orders/schemas/order.schema';
 import { Product } from './modules/products/schemas/product.schema';
 
 const CATEGORIES = [
@@ -33,6 +34,11 @@ const NOUNS = [
   'Sunglasses', 'Wallet', 'Mug', 'Drone',
 ];
 const TAG_POOL = ['new', 'sale', 'popular', 'limited', 'eco', 'bestseller'];
+const CUSTOMER_NAMES = [
+  'Regina Cooper', 'Robert Edwards', 'Gloria Mckinney', 'Randall Fisher',
+  'Judith Black', 'Philip Henry', 'Devon Williamson', 'Debra Wilson',
+  'Mitchel Cooper', 'Felecia Brown', 'Marcus Reid', 'Hilda Barnes',
+];
 
 function slugify(value: string): string {
   return value
@@ -57,10 +63,12 @@ async function run() {
 
   const categoryModel = app.get<Model<Category>>(getModelToken(Category.name));
   const productModel = app.get<Model<Product>>(getModelToken(Product.name));
+  const orderModel = app.get<Model<Order>>(getModelToken(Order.name));
 
   await Promise.all([
     productModel.deleteMany({}).exec(),
     categoryModel.deleteMany({}).exec(),
+    orderModel.deleteMany({}).exec(),
   ]);
 
   const categories = await categoryModel.insertMany(
@@ -102,9 +110,48 @@ async function run() {
   // runtime; cast because it is absent from InsertManyOptions typings).
   await productModel.insertMany(products, { timestamps: false } as never);
 
+  // ── Orders ────────────────────────────────────────────────────────────
+  const statuses = Object.values(OrderStatus);
+  const payments = Object.values(PaymentType);
+  const usedOrderNos = new Set<string>();
+  const nextOrderNo = () => {
+    let no = '';
+    do {
+      no = `#${100000 + rand(0, 899999)}`;
+    } while (usedOrderNos.has(no));
+    usedOrderNos.add(no);
+    return no;
+  };
+
+  const orders = Array.from({ length: 40 }, () => {
+    const lineItems = Array.from({ length: rand(1, 3) }, () => {
+      const p = pick(products);
+      return { name: p.name, price: p.price, qty: rand(1, 4) };
+    });
+    const subtotal = lineItems.reduce((s, it) => s + it.price * it.qty, 0);
+    const tax = Math.round(subtotal * 0.1 * 100) / 100;
+    const status = pick(statuses);
+    const createdAt = new Date(now - rand(0, 90) * 24 * 60 * 60 * 1000);
+    return {
+      orderNo: nextOrderNo(),
+      customerName: pick(CUSTOMER_NAMES),
+      items: lineItems,
+      subtotal: Math.round(subtotal * 100) / 100,
+      tax,
+      total: Math.round((subtotal + tax) * 100) / 100,
+      paymentType: pick(payments),
+      status,
+      history: [{ status, at: createdAt }],
+      createdAt,
+      updatedAt: createdAt,
+    };
+  });
+
+  await orderModel.insertMany(orders, { timestamps: false } as never);
+
   // eslint-disable-next-line no-console
   console.log(
-    `Seeded ${categories.length} categories and ${products.length} products.`,
+    `Seeded ${categories.length} categories, ${products.length} products and ${orders.length} orders.`,
   );
 
   await app.close();
