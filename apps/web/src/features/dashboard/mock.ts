@@ -310,6 +310,7 @@ export interface PersonItem {
   id: string;
   name: string;
   role: string;
+  avatar?: string;
 }
 
 export const favorites: PersonItem[] = [
