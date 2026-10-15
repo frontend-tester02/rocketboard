@@ -38,6 +38,11 @@ export function ProductsPageClient() {
   const deleteProduct = useDeleteProduct();
 
   const [toDelete, setToDelete] = useState<ProductDto | null>(null);
+  const [gridSelected, setGridSelected] = useState<Record<string, boolean>>({});
+
+  const toggleGridSelect = useCallback((id: string, value: boolean) => {
+    setGridSelected((prev) => ({ ...prev, [id]: value }));
+  }, []);
 
   const categoryName = useCallback(
     (id?: string) => {
@@ -174,6 +179,8 @@ export function ProductsPageClient() {
           data={products}
           categoryName={categoryName}
           onDelete={setToDelete}
+          selected={gridSelected}
+          onToggleSelect={toggleGridSelect}
         />
       ) : (
         <ProductsTable
