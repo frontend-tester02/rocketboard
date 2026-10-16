@@ -5,6 +5,7 @@ import { PenSquare, Search, Tag, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { SearchInput } from '@/components/common/search-input';
+import { AddLabelModal } from '@/features/mail/components/add-label-modal';
 import { MailList } from '@/features/mail/components/mail-list';
 import { MailReader } from '@/features/mail/components/mail-reader';
 import { folders } from '@/features/mail/mail-meta';
@@ -91,6 +92,7 @@ export function MailPageClient() {
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Labels
           </span>
+          <AddLabelModal />
         </div>
         <div className="mt-1 flex flex-col gap-0.5">
           {labelsQuery.data?.length ? (
