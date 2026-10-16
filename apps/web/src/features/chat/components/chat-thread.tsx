@@ -16,6 +16,7 @@ import {
   convAvatarName,
   convTitle,
   senderId,
+  senderName,
 } from '@/features/chat/chat-utils';
 import { useInvalidateConversations } from '@/features/chat/hooks';
 import { emitSocket, useSocketEvent } from '@/features/chat/use-socket';
@@ -144,6 +145,7 @@ export function ChatThread({
     });
   }
 
+  const isTeam = conversation.type === 'team';
   const partnerOnline =
     conversation.type === 'private' &&
     conversation.members.some((m) => m.id !== meId && online.has(m.id));
@@ -213,26 +215,36 @@ export function ChatThread({
                     <span className="h-px flex-1 bg-border" />
                   </div>
                 )}
-                <div className={cn('flex', mine ? 'justify-end' : 'justify-start')}>
-                  <div
-                    className={cn(
-                      'max-w-[75%] rounded-2xl px-3.5 py-2 text-sm',
-                      mine
-                        ? 'rounded-br-sm bg-primary text-primary-foreground'
-                        : 'rounded-bl-sm bg-muted text-foreground',
+                <div className={cn('flex items-end gap-2', mine ? 'justify-end' : 'justify-start')}>
+                  {isTeam && !mine && (
+                    <UserAvatar name={senderName(msg)} className="size-7 shrink-0" />
+                  )}
+                  <div className="max-w-[75%]">
+                    {isTeam && !mine && (
+                      <p className="mb-0.5 pl-1 text-xs font-medium text-muted-foreground">
+                        {senderName(msg)}
+                      </p>
                     )}
-                  >
-                    {msg.text}
-                    {msg.createdAt && (
-                      <span
-                        className={cn(
-                          'ml-2 inline-block text-[10px]',
-                          mine ? 'text-primary-foreground/70' : 'text-muted-foreground',
-                        )}
-                      >
-                        {format(new Date(msg.createdAt), 'HH:mm')}
-                      </span>
-                    )}
+                    <div
+                      className={cn(
+                        'rounded-2xl px-3.5 py-2 text-sm',
+                        mine
+                          ? 'rounded-br-sm bg-primary text-primary-foreground'
+                          : 'rounded-bl-sm bg-muted text-foreground',
+                      )}
+                    >
+                      {msg.text}
+                      {msg.createdAt && (
+                        <span
+                          className={cn(
+                            'ml-2 inline-block text-[10px]',
+                            mine ? 'text-primary-foreground/70' : 'text-muted-foreground',
+                          )}
+                        >
+                          {format(new Date(msg.createdAt), 'HH:mm')}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

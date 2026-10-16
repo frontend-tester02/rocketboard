@@ -2,7 +2,7 @@
 
 import type { ConversationDto, PresenceEvent } from '@rocket/shared';
 import { formatDistanceToNow } from 'date-fns';
-import { Plus, Search } from 'lucide-react';
+import { Check, Plus, Search } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { UserAvatar } from '@/components/common/user-avatar';
 import { SearchInput } from '@/components/common/search-input';
@@ -151,25 +151,59 @@ export function ChatPageClient() {
 
 function NewChat({ meId, onCreated }: { meId: string; onCreated: (id: string) => void }) {
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<'direct' | 'group'>('direct');
   const [term, setTerm] = useState('');
+  const [groupName, setGroupName] = useState('');
+  const [picked, setPicked] = useState<Record<string, boolean>>({});
   const usersQuery = useUserSearch(term);
   const createConversation = useCreateConversation();
 
-  function start(userId: string) {
+  function reset() {
+    setMode('direct');
+    setTerm('');
+    setGroupName('');
+    setPicked({});
+  }
+
+  function startDirect(userId: string) {
     createConversation.mutate(
       { type: 'private', members: [userId] },
       {
         onSuccess: (conv) => {
           onCreated(conv.id);
           setOpen(false);
-          setTerm('');
+          reset();
         },
       },
     );
   }
 
+  function createGroup() {
+    const members = Object.entries(picked).filter(([, v]) => v).map(([k]) => k);
+    if (members.length === 0) return;
+    createConversation.mutate(
+      { type: 'team', name: groupName.trim() || 'New Group', members },
+      {
+        onSuccess: (conv) => {
+          onCreated(conv.id);
+          setOpen(false);
+          reset();
+        },
+      },
+    );
+  }
+
+  const users = (usersQuery.data ?? []).filter((u) => u.id !== meId);
+  const pickedCount = Object.values(picked).filter(Boolean).length;
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (!v) reset();
+      }}
+    >
       <PopoverTrigger
         className="inline-flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
         aria-label="New chat"
@@ -177,38 +211,86 @@ function NewChat({ meId, onCreated }: { meId: string; onCreated: (id: string) =>
         <Plus className="size-4" />
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72 p-2">
-        <SearchInput
-          value={term}
-          onChange={setTerm}
-          placeholder="Search people…"
-          className="mb-2 w-full"
-        />
-        <div className="max-h-64 overflow-y-auto">
-          {usersQuery.data?.length ? (
-            usersQuery.data
-              .filter((u) => u.id !== meId)
-              .map((u) => (
+        {/* Mode toggle */}
+        <div className="mb-2 flex gap-1 rounded-lg bg-muted p-0.5">
+          {(['direct', 'group'] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setMode(m)}
+              className={cn(
+                'flex-1 rounded-md py-1 text-xs font-medium capitalize transition-colors',
+                mode === m ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground',
+              )}
+            >
+              {m === 'direct' ? 'Direct' : 'Group'}
+            </button>
+          ))}
+        </div>
+
+        {mode === 'group' && (
+          <input
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+            placeholder="Group name"
+            className="mb-2 h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+        )}
+
+        <SearchInput value={term} onChange={setTerm} placeholder="Search people…" className="mb-2 w-full" />
+
+        <div className="max-h-56 overflow-y-auto">
+          {users.length ? (
+            users.map((u) => {
+              const name = `${u.firstName} ${u.lastName}`;
+              const isPicked = picked[u.id] ?? false;
+              return (
                 <button
                   key={u.id}
                   type="button"
-                  onClick={() => start(u.id)}
-                  className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors hover:bg-accent"
+                  onClick={() =>
+                    mode === 'direct'
+                      ? startDirect(u.id)
+                      : setPicked((p) => ({ ...p, [u.id]: !p[u.id] }))
+                  }
+                  className={cn(
+                    'flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors hover:bg-accent',
+                    mode === 'group' && isPicked && 'bg-primary/5',
+                  )}
                 >
-                  <UserAvatar name={`${u.firstName} ${u.lastName}`} src={u.avatar} className="size-8" />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">
-                      {u.firstName} {u.lastName}
-                    </p>
+                  <UserAvatar name={name} src={u.avatar} className="size-8" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{name}</p>
                     <p className="truncate text-xs text-muted-foreground">{u.email}</p>
                   </div>
+                  {mode === 'group' && (
+                    <span
+                      className={cn(
+                        'flex size-4 shrink-0 items-center justify-center rounded border',
+                        isPicked ? 'border-primary bg-primary text-primary-foreground' : 'border-border',
+                      )}
+                    >
+                      {isPicked && <Check className="size-3" />}
+                    </span>
+                  )}
                 </button>
-              ))
+              );
+            })
           ) : (
-            <p className="px-2 py-4 text-center text-sm text-muted-foreground">
-              No users found.
-            </p>
+            <p className="px-2 py-4 text-center text-sm text-muted-foreground">No users found.</p>
           )}
         </div>
+
+        {mode === 'group' && (
+          <button
+            type="button"
+            onClick={createGroup}
+            disabled={pickedCount === 0 || createConversation.isPending}
+            className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-md bg-primary text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-40"
+          >
+            Create group{pickedCount > 0 ? ` (${pickedCount})` : ''}
+          </button>
+        )}
       </PopoverContent>
     </Popover>
   );
