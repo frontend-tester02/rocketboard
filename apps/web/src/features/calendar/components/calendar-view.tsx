@@ -6,6 +6,7 @@ import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { useMemo, useRef, useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
+import { AddCalendarModal } from '@/features/calendar/components/add-calendar-modal';
 import { useCalendars, useEvents } from '@/features/calendar/hooks';
 import { cn } from '@/lib/utils';
 
@@ -75,7 +76,10 @@ export function CalendarView() {
         </div>
 
         <div className="rounded-xl border border-border/60 bg-card p-4 shadow-sm">
-          <h3 className="mb-3 text-sm font-semibold">My Calendars</h3>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-semibold">My Calendars</h3>
+            <AddCalendarModal />
+          </div>
           <div className="flex flex-col gap-2">
             {calendarsQuery.data?.map((c) => {
               const shown = !hidden.has(c.id);
