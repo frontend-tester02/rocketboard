@@ -3,6 +3,7 @@
 import type { OrderDto, OrderStatus } from '@rocket/shared';
 import type { OnChangeFn, PaginationState } from '@tanstack/react-table';
 import { ChevronDown } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import { ExportMenu } from '@/components/common/export-menu';
@@ -25,6 +26,7 @@ import { useOrdersUrlState } from '@/features/orders/use-orders-url-state';
 import { cn } from '@/lib/utils';
 
 export function OrdersPageClient() {
+  const router = useRouter();
   const { state, setParams, query } = useOrdersUrlState();
   const ordersQuery = useOrders(query);
   const countsQuery = useOrderCounts();
@@ -43,10 +45,10 @@ export function OrdersPageClient() {
     [pagination, setParams],
   );
 
-  const onView = useCallback((order: OrderDto) => {
-    // Order details modal arrives in stage 28.
-    toast.info(`Order ${order.orderNo} details arrive in a later stage.`);
-  }, []);
+  const onView = useCallback(
+    (order: OrderDto) => router.push(`/ecommerce/orders/${order.id}`),
+    [router],
+  );
 
   const onStatusChange = useCallback(
     (order: OrderDto, status: OrderStatus) => {
