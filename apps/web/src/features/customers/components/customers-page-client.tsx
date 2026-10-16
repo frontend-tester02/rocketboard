@@ -2,14 +2,13 @@
 
 import type { CustomerDto } from '@rocket/shared';
 import type { OnChangeFn, PaginationState } from '@tanstack/react-table';
-import { Plus } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { ExportMenu } from '@/components/common/export-menu';
 import { PageHeader } from '@/components/common/page-header';
 import { SearchInput } from '@/components/common/search-input';
-import { Button } from '@/components/ui/button';
+import { CustomerStepperModal } from '@/features/customers/components/customer-stepper-modal';
 import { CustomersTable } from '@/features/customers/components/customers-table';
 import { useCustomers, useDeleteCustomer } from '@/features/customers/hooks';
 import { useCustomersUrlState } from '@/features/customers/use-customers-url-state';
@@ -52,13 +51,7 @@ export function CustomersPageClient() {
         actions={
           <>
             <ExportMenu />
-            <Button
-              className="gap-1.5"
-              onClick={() => toast.info('Add Customer stepper arrives in stage 33.')}
-            >
-              <Plus className="size-4" />
-              Add Customer
-            </Button>
+            <CustomerStepperModal />
           </>
         }
       />
