@@ -14,6 +14,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { CustomersModule } from './modules/customers/customers.module';
+import { MailboxModule } from './modules/mailbox/mailbox.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { ProductsModule } from './modules/products/products.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
@@ -44,6 +45,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
     OrdersModule,
     CustomersModule,
     CalendarModule,
+    MailboxModule,
     UploadsModule,
   ],
   controllers: [AppController],
