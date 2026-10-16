@@ -1,10 +1,11 @@
-import { PlaceholderPage } from '@/components/common/placeholder-page';
+import { PageHeader } from '@/components/common/page-header';
+import { CalendarView } from '@/features/calendar/components/calendar-view';
 
 export default function CalendarPage() {
   return (
-    <PlaceholderPage
-      title="Calendar"
-      description="Schedule and view events."
-    />
+    <div className="flex flex-col gap-5">
+      <PageHeader title="Calendar" />
+      <CalendarView />
+    </div>
   );
 }

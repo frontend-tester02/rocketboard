@@ -11,6 +11,7 @@ import {
 } from './common';
 import { envValidationSchema } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
+import { CalendarModule } from './modules/calendar/calendar.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import { OrdersModule } from './modules/orders/orders.module';
@@ -42,6 +43,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
     ProductsModule,
     OrdersModule,
     CustomersModule,
+    CalendarModule,
     UploadsModule,
   ],
   controllers: [AppController],
