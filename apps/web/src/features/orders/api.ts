@@ -11,6 +11,14 @@ interface Envelope<T> {
   data: T;
 }
 
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+
+/** Absolute URL of an order's invoice PDF (auth cookie travels with it). */
+export function invoiceUrl(id: string): string {
+  return `${API_URL}/orders/${id}/invoice.pdf`;
+}
+
 export type OrdersQuery = Partial<
   Pick<OrderListQuery, 'page' | 'limit' | 'sort' | 'order' | 'search' | 'status' | 'paymentType'>
 > & {

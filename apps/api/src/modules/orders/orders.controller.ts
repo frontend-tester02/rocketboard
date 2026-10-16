@@ -6,8 +6,10 @@ import {
   Patch,
   Post,
   Query,
+  Res,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { Response } from 'express';
 import {
   createOrderSchema,
   orderListQuerySchema,
@@ -37,6 +39,22 @@ export class OrdersController {
   @ApiOperation({ summary: 'Order counts per status' })
   counts() {
     return this.orders.counts();
+  }
+
+  @Get(':id/invoice.pdf')
+  @ApiOperation({ summary: 'Download the order invoice as a PDF' })
+  async invoice(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    const doc = await this.orders.buildInvoice(id);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename="invoice-${id}.pdf"`,
+    );
+    doc.pipe(res);
+    doc.end();
   }
 
   @Get(':id')

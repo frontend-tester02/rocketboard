@@ -8,8 +8,11 @@ import {
   type UpdateOrderStatus,
 } from '@rocket/shared';
 import { FilterQuery, Model } from 'mongoose';
+import PDFDocument from 'pdfkit';
 import { paginate } from '../../common';
-import { Order } from './schemas/order.schema';
+import { Order, type OrderDocument } from './schemas/order.schema';
+
+const money = (n: number) => `$${n.toFixed(2)}`;
 
 @Injectable()
 export class OrdersService {
@@ -89,6 +92,83 @@ export class OrdersService {
       .exec();
     if (!order) throw new NotFoundException('Order not found');
     return order;
+  }
+
+  /** Build an invoice PDF document for an order (caller pipes + ends it). */
+  async buildInvoice(id: string): Promise<PDFKit.PDFDocument> {
+    const order = await this.findById(id);
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+    // Header
+    doc.fontSize(22).fillColor('#3E4DF5').text('Rocket Inc.', { continued: false });
+    doc.fontSize(10).fillColor('#9AA3B2').text('123 Market Street, San Francisco, CA');
+    doc.moveDown(0.5);
+    doc
+      .fontSize(26)
+      .fillColor('#111827')
+      .text('INVOICE', { align: 'right' });
+    doc
+      .fontSize(10)
+      .fillColor('#6B7280')
+      .text(`Order ${order.orderNo}`, { align: 'right' })
+      .text(
+        `Date: ${new Date((order as OrderDocument & { createdAt?: Date }).createdAt ?? Date.now()).toLocaleDateString()}`,
+        { align: 'right' },
+      )
+      .text(`Status: ${order.status}`, { align: 'right' });
+
+    doc.moveDown(1.5);
+
+    // Bill to
+    doc.fontSize(11).fillColor('#111827').text('Bill To:');
+    doc.fontSize(11).fillColor('#374151').text(order.customerName);
+    doc.moveDown(1);
+
+    // Table header
+    const top = doc.y;
+    const cols = { name: 50, qty: 320, price: 390, total: 480 };
+    doc.fontSize(10).fillColor('#6B7280');
+    doc.text('Product', cols.name, top);
+    doc.text('Qty', cols.qty, top);
+    doc.text('Price', cols.price, top);
+    doc.text('Total', cols.total, top);
+    doc
+      .moveTo(50, top + 15)
+      .lineTo(545, top + 15)
+      .strokeColor('#E5E7EB')
+      .stroke();
+
+    let y = top + 25;
+    doc.fillColor('#111827');
+    for (const item of order.items) {
+      doc.fontSize(10).text(item.name, cols.name, y, { width: 250 });
+      doc.text(String(item.qty), cols.qty, y);
+      doc.text(money(item.price), cols.price, y);
+      doc.text(money(item.price * item.qty), cols.total, y);
+      y += 22;
+    }
+
+    doc.moveTo(50, y + 5).lineTo(545, y + 5).strokeColor('#E5E7EB').stroke();
+    y += 15;
+
+    // Totals
+    doc.fontSize(10).fillColor('#6B7280');
+    doc.text('Subtotal', cols.price, y);
+    doc.fillColor('#111827').text(money(order.subtotal), cols.total, y);
+    y += 18;
+    doc.fillColor('#6B7280').text('Tax', cols.price, y);
+    doc.fillColor('#111827').text(money(order.tax), cols.total, y);
+    y += 20;
+    doc.fontSize(12).fillColor('#111827').text('Total', cols.price, y);
+    doc.fontSize(12).fillColor('#3E4DF5').text(money(order.total), cols.total, y);
+
+    doc.moveDown(4);
+    doc
+      .fontSize(9)
+      .fillColor('#9AA3B2')
+      .text('Thank you for your business.', 50, 760, { align: 'center', width: 495 });
+
+    return doc;
   }
 
   /** Generate a unique, human-friendly order number (retries on collision). */

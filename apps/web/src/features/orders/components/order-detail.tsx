@@ -1,9 +1,10 @@
 'use client';
 
-import { OrderStatus } from '@rocket/shared';
-import { Loader2, Package } from 'lucide-react';
+import { OrderStatus, type OrderDto } from '@rocket/shared';
+import { Download, Loader2, Package, Printer } from 'lucide-react';
 import { useState } from 'react';
 import { UserAvatar } from '@/components/common/user-avatar';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -11,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { invoiceUrl } from '@/features/orders/api';
 import { useOrder, useUpdateOrderStatus } from '@/features/orders/hooks';
 import { OrderStatusBadge, paymentLabels } from '@/features/orders/order-meta';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
@@ -213,13 +215,100 @@ export function OrderDetail({ id }: { id: string }) {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
-          <p className="font-medium">{tab}</p>
-          <p className="text-sm text-muted-foreground">
-            The {tab} tab is implemented in a later stage.
+        <InvoicePanel order={order} />
+      )}
+    </div>
+  );
+}
+
+function InvoicePanel({ order }: { order: OrderDto }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-end gap-2">
+        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => window.print()}>
+          <Printer className="size-4" />
+          Print
+        </Button>
+        <Button
+          size="sm"
+          className="gap-1.5"
+          onClick={() => window.open(invoiceUrl(order.id), '_blank')}
+        >
+          <Download className="size-4" />
+          Download PDF
+        </Button>
+      </div>
+
+      {/* Invoice preview */}
+      <div className="rounded-xl border border-border/60 bg-card p-6">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-lg font-semibold text-primary">Rocket Inc.</p>
+            <p className="text-xs text-muted-foreground">
+              123 Market Street, San Francisco, CA
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-semibold tracking-tight">INVOICE</p>
+            <p className="text-xs text-muted-foreground">{order.orderNo}</p>
+            {order.createdAt && (
+              <p className="text-xs text-muted-foreground">
+                {formatDate(order.createdAt)}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Bill To
+          </p>
+          <p className="mt-1 text-sm font-medium">{order.customerName}</p>
+          <p className="text-xs text-muted-foreground">
+            {paymentLabels[order.paymentType]}
           </p>
         </div>
-      )}
+
+        <table className="mt-6 w-full text-sm">
+          <thead>
+            <tr className="border-b border-border/60 text-left text-xs text-muted-foreground">
+              <th className="py-2 font-medium">Product</th>
+              <th className="py-2 text-right font-medium">Price</th>
+              <th className="py-2 text-center font-medium">Qty</th>
+              <th className="py-2 text-right font-medium">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {order.items.map((item, i) => (
+              <tr key={i} className="border-b border-border/60 last:border-0">
+                <td className="py-2.5">{item.name}</td>
+                <td className="py-2.5 text-right text-muted-foreground">
+                  {formatCurrency(item.price)}
+                </td>
+                <td className="py-2.5 text-center text-muted-foreground">
+                  {item.qty}
+                </td>
+                <td className="py-2.5 text-right font-medium">
+                  {formatCurrency(item.price * item.qty)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div className="ml-auto mt-4 flex w-full max-w-xs flex-col gap-2 text-sm">
+          <Row label="Subtotal" value={formatCurrency(order.subtotal)} />
+          <Row label="Tax" value={formatCurrency(order.tax)} />
+          <div className="mt-1 flex items-center justify-between border-t border-border/60 pt-2 text-base font-semibold">
+            <span>Total</span>
+            <span className="text-primary">{formatCurrency(order.total)}</span>
+          </div>
+        </div>
+
+        <p className="mt-8 text-center text-xs text-muted-foreground">
+          Thank you for your business.
+        </p>
+      </div>
     </div>
   );
 }
