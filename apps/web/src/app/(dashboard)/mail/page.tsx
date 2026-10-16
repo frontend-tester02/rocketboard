@@ -1,10 +1,10 @@
-import { PlaceholderPage } from '@/components/common/placeholder-page';
+import { Suspense } from 'react';
+import { MailPageClient } from '@/features/mail/components/mail-page-client';
 
 export default function MailPage() {
   return (
-    <PlaceholderPage
-      title="Mail"
-      description="Your inbox and messages."
-    />
+    <Suspense fallback={null}>
+      <MailPageClient />
+    </Suspense>
   );
 }
