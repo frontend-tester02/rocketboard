@@ -1,15 +1,32 @@
 'use client';
 
-import type { MailDto } from '@rocket/shared';
-import { PenSquare, Search, Tag, Trash2, X } from 'lucide-react';
+import type { MailDto, MailLabelDto } from '@rocket/shared';
+import {
+  MoreHorizontal,
+  Palette,
+  Pencil,
+  PenSquare,
+  Search,
+  Tag,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { SearchInput } from '@/components/common/search-input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { AddLabelModal } from '@/features/mail/components/add-label-modal';
+import { ComposeMail } from '@/features/mail/components/compose-mail';
 import { MailList } from '@/features/mail/components/mail-list';
 import { MailReader } from '@/features/mail/components/mail-reader';
 import { folders } from '@/features/mail/mail-meta';
 import {
+  useDeleteLabel,
   useDeleteMail,
   useLabels,
   useMailCounts,
@@ -26,8 +43,12 @@ export function MailPageClient() {
   const labelsQuery = useLabels();
   const patchMail = usePatchMail();
   const deleteMail = useDeleteMail();
+  const deleteLabel = useDeleteLabel();
 
   const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({});
+  const [composing, setComposing] = useState(false);
+  const [editingLabel, setEditingLabel] = useState<MailLabelDto | null>(null);
+  const [toDeleteLabel, setToDeleteLabel] = useState<MailLabelDto | null>(null);
   const selectedCount = Object.values(selectedIds).filter(Boolean).length;
 
   const mails = mailsQuery.data?.data ?? [];
@@ -53,7 +74,7 @@ export function MailPageClient() {
       <aside className="flex w-56 shrink-0 flex-col border-r border-border/60 p-3">
         <button
           type="button"
-          onClick={() => toast.info('Compose arrives in stage 52.')}
+          onClick={() => setComposing(true)}
           className="mb-4 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           <PenSquare className="size-4" />
@@ -97,22 +118,48 @@ export function MailPageClient() {
         <div className="mt-1 flex flex-col gap-0.5">
           {labelsQuery.data?.length ? (
             labelsQuery.data.map((l) => (
-              <button
-                key={l.id}
-                type="button"
-                onClick={() =>
-                  setParams({ label: l.name, mail: undefined, page: undefined })
-                }
-                className={cn(
-                  'flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm transition-colors',
-                  state.label === l.name
-                    ? 'bg-accent font-medium text-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-foreground',
-                )}
-              >
-                <span className="size-2.5 rounded-full" style={{ background: l.color }} />
-                {l.name}
-              </button>
+              <div key={l.id} className="group flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setParams({ label: l.name, mail: undefined, page: undefined })
+                  }
+                  className={cn(
+                    'flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm transition-colors',
+                    state.label === l.name
+                      ? 'bg-accent font-medium text-foreground'
+                      : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+                  )}
+                >
+                  <span className="size-2.5 shrink-0 rounded-full" style={{ background: l.color }} />
+                  <span className="truncate">{l.name}</span>
+                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    className="inline-flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground opacity-0 outline-none transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
+                    aria-label={`Options for ${l.name}`}
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => setEditingLabel(l)}>
+                      <Pencil className="size-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setEditingLabel(l)}>
+                      <Palette className="size-4" />
+                      Change color
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-danger focus:text-danger"
+                      onSelect={() => setToDeleteLabel(l)}
+                    >
+                      <Trash2 className="size-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             ))
           ) : (
             <p className="px-3 py-1 text-xs text-muted-foreground">
@@ -190,6 +237,35 @@ export function MailPageClient() {
           </>
         )}
       </section>
+
+      {/* Edit label (controlled) */}
+      <AddLabelModal
+        label={editingLabel}
+        open={editingLabel !== null}
+        onOpenChange={(o) => !o && setEditingLabel(null)}
+      />
+
+      <ConfirmDialog
+        open={toDeleteLabel !== null}
+        onOpenChange={(o) => !o && setToDeleteLabel(null)}
+        title="Delete label?"
+        description={
+          toDeleteLabel
+            ? `“${toDeleteLabel.name}” will be removed from all mails.`
+            : undefined
+        }
+        confirmLabel="Delete"
+        destructive
+        onConfirm={() => {
+          if (toDeleteLabel) {
+            deleteLabel.mutate(toDeleteLabel.id, {
+              onSettled: () => setToDeleteLabel(null),
+            });
+          }
+        }}
+      />
+
+      {composing && <ComposeMail onClose={() => setComposing(false)} />}
     </div>
   );
 }
