@@ -154,9 +154,22 @@ export class MailboxService {
     return mail;
   }
 
-  /** Seed a couple of welcome mails on first use so the inbox is not empty. */
+  /** Seed welcome mails + default labels on first use. */
   private async bootstrap(userId: string): Promise<void> {
     const owner = new Types.ObjectId(userId);
+
+    // Default labels (once).
+    const labelCount = await this.labelModel.countDocuments({ owner }).exec();
+    if (labelCount === 0) {
+      await this.labelModel.insertMany([
+        { owner, name: 'Personal', color: '#F7A35C' },
+        { owner, name: 'Work', color: '#14B8A6' },
+        { owner, name: 'Friends', color: '#22C55E' },
+        { owner, name: 'Family', color: '#EAB308' },
+        { owner, name: 'Social', color: '#3E4DF5' },
+      ]);
+    }
+
     const existing = await this.mailModel.countDocuments({ owner }).exec();
     if (existing > 0) return;
     const sender = await this.users.findById(userId);

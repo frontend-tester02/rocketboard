@@ -1,8 +1,8 @@
 'use client';
 
 import { MailFolder, type MailDto } from '@rocket/shared';
-import { formatDistanceToNow } from 'date-fns';
-import { Star } from 'lucide-react';
+import { format } from 'date-fns';
+import { Paperclip, Star } from 'lucide-react';
 import { UserAvatar } from '@/components/common/user-avatar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
@@ -41,25 +41,26 @@ export function MailList({
   return (
     <div className="flex flex-col divide-y divide-border/60">
       {mails.map((mail) => {
-        const who = outgoing
-          ? `To: ${mail.to.join(', ') || '—'}`
-          : mail.from.name;
+        const who = outgoing ? mail.to[0] ?? '—' : mail.from.name;
         const unread = !mail.isRead;
+        const selected = selectedIds[mail.id] ?? false;
         return (
           <div
             key={mail.id}
-            className={cn(
-              'flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50',
-              unread && 'bg-primary/[0.03]',
-            )}
             onClick={() => onOpen(mail.id)}
+            className={cn(
+              'group flex cursor-pointer items-center gap-3 px-4 py-2.5 text-sm transition-colors',
+              selected ? 'bg-primary/5' : 'hover:bg-accent/40',
+            )}
           >
             <Checkbox
-              checked={selectedIds[mail.id] ?? false}
+              checked={selected}
               onCheckedChange={(v) => onToggleSelect(mail.id, v === true)}
               onClick={(e) => e.stopPropagation()}
               aria-label="Select mail"
+              className="shrink-0"
             />
+
             <button
               type="button"
               onClick={(e) => {
@@ -69,42 +70,60 @@ export function MailList({
               aria-label={mail.isStarred ? 'Unstar' : 'Star'}
               className={cn(
                 'shrink-0 transition-colors',
-                mail.isStarred ? 'text-warning' : 'text-muted-foreground/50 hover:text-muted-foreground',
+                mail.isStarred
+                  ? 'text-warning'
+                  : 'text-muted-foreground/40 hover:text-muted-foreground',
               )}
             >
               <Star className={cn('size-4', mail.isStarred && 'fill-current')} />
             </button>
-            <UserAvatar name={outgoing ? mail.to[0] ?? 'To' : mail.from.name} className="size-9" />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between gap-2">
-                <p className={cn('truncate text-sm', unread ? 'font-semibold' : 'font-medium')}>
-                  {who}
-                </p>
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  {mail.createdAt
-                    ? formatDistanceToNow(new Date(mail.createdAt), { addSuffix: true })
-                    : ''}
-                </span>
-              </div>
-              <p className={cn('truncate text-sm', unread ? 'font-medium' : 'text-muted-foreground')}>
-                {mail.subject || '(no subject)'}
-              </p>
-              <p className="truncate text-xs text-muted-foreground">
-                {preview(mail.body)}
-              </p>
-              {mail.labels.length > 0 && (
-                <div className="mt-1 flex flex-wrap gap-1">
-                  {mail.labels.map((l) => (
-                    <span
-                      key={l}
-                      className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
-                    >
-                      {l}
-                    </span>
-                  ))}
-                </div>
+
+            <UserAvatar
+              name={outgoing ? mail.to[0] ?? 'To' : mail.from.name}
+              className="size-8 shrink-0"
+            />
+
+            {/* Sender */}
+            <span
+              className={cn(
+                'w-32 shrink-0 truncate md:w-40',
+                unread ? 'font-semibold text-foreground' : 'font-medium text-foreground/90',
               )}
-            </div>
+            >
+              {who}
+            </span>
+
+            {/* Subject — preview */}
+            <span className="min-w-0 flex-1 truncate text-muted-foreground">
+              <span className={cn(unread ? 'font-medium text-foreground' : 'text-foreground/80')}>
+                {mail.subject || '(no subject)'}
+              </span>
+              {preview(mail.body) && (
+                <span className="text-muted-foreground"> — {preview(mail.body)}</span>
+              )}
+            </span>
+
+            {/* Labels */}
+            {mail.labels.length > 0 && (
+              <span className="hidden shrink-0 gap-1 lg:flex">
+                {mail.labels.slice(0, 2).map((l) => (
+                  <span
+                    key={l}
+                    className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+                  >
+                    {l}
+                  </span>
+                ))}
+              </span>
+            )}
+
+            {mail.attachments.length > 0 && (
+              <Paperclip className="size-3.5 shrink-0 text-muted-foreground" />
+            )}
+
+            <span className="w-12 shrink-0 text-right text-xs text-muted-foreground">
+              {mail.createdAt ? format(new Date(mail.createdAt), 'HH:mm') : ''}
+            </span>
           </div>
         );
       })}

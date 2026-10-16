@@ -2,6 +2,8 @@
 
 import type { MailDto, MailLabelDto } from '@rocket/shared';
 import {
+  ChevronLeft,
+  ChevronRight,
   MoreHorizontal,
   Palette,
   Pencil,
@@ -52,6 +54,7 @@ export function MailPageClient() {
   const selectedCount = Object.values(selectedIds).filter(Boolean).length;
 
   const mails = mailsQuery.data?.data ?? [];
+  const totalPages = mailsQuery.data?.meta.totalPages ?? 1;
 
   function openFolder(folder: string) {
     setParams({ folder, label: undefined, mail: undefined, page: undefined });
@@ -75,10 +78,10 @@ export function MailPageClient() {
         <button
           type="button"
           onClick={() => setComposing(true)}
-          className="mb-4 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          className="mb-4 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary text-sm font-semibold uppercase tracking-wide text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
         >
           <PenSquare className="size-4" />
-          Compose
+          New Message
         </button>
 
         <nav className="flex flex-col gap-0.5">
@@ -102,7 +105,16 @@ export function MailPageClient() {
                 <f.icon className="size-4" />
                 <span className="flex-1 text-left">{f.label}</span>
                 {!!showCount && (
-                  <span className="text-xs font-medium">{showCount}</span>
+                  <span
+                    className={cn(
+                      'inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold',
+                      f.value === 'inbox'
+                        ? 'bg-danger text-white'
+                        : 'bg-muted text-muted-foreground',
+                    )}
+                  >
+                    {showCount}
+                  </span>
                 )}
               </button>
             );
@@ -211,6 +223,31 @@ export function MailPageClient() {
                     placeholder="Search mail…"
                     className="w-full max-w-xs"
                   />
+                  {totalPages > 1 && (
+                    <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
+                      <button
+                        type="button"
+                        disabled={state.page <= 1}
+                        onClick={() => setParams({ page: state.page - 1 })}
+                        className="inline-flex size-7 items-center justify-center rounded-md hover:bg-accent disabled:opacity-40"
+                        aria-label="Previous page"
+                      >
+                        <ChevronLeft className="size-4" />
+                      </button>
+                      <span>
+                        {state.page} of {totalPages}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={state.page >= totalPages}
+                        onClick={() => setParams({ page: state.page + 1 })}
+                        className="inline-flex size-7 items-center justify-center rounded-md hover:bg-accent disabled:opacity-40"
+                        aria-label="Next page"
+                      >
+                        <ChevronRight className="size-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
