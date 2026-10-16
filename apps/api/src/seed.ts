@@ -12,6 +12,7 @@ import { OrderStatus, PaymentType, ProductStatus } from '@rocket/shared';
 import type { Model } from 'mongoose';
 import { AppModule } from './app.module';
 import { Category } from './modules/categories/schemas/category.schema';
+import { Customer } from './modules/customers/schemas/customer.schema';
 import { Order } from './modules/orders/schemas/order.schema';
 import { Product } from './modules/products/schemas/product.schema';
 
@@ -64,11 +65,13 @@ async function run() {
   const categoryModel = app.get<Model<Category>>(getModelToken(Category.name));
   const productModel = app.get<Model<Product>>(getModelToken(Product.name));
   const orderModel = app.get<Model<Order>>(getModelToken(Order.name));
+  const customerModel = app.get<Model<Customer>>(getModelToken(Customer.name));
 
   await Promise.all([
     productModel.deleteMany({}).exec(),
     categoryModel.deleteMany({}).exec(),
     orderModel.deleteMany({}).exec(),
+    customerModel.deleteMany({}).exec(),
   ]);
 
   const categories = await categoryModel.insertMany(
@@ -149,9 +152,47 @@ async function run() {
 
   await orderModel.insertMany(orders, { timestamps: false } as never);
 
+  // ── Customers ─────────────────────────────────────────────────────────
+  const CITIES = ['New York', 'London', 'Berlin', 'Toronto', 'Sydney', 'Austin'];
+  const COUNTRIES = ['USA', 'UK', 'Germany', 'Canada', 'Australia', 'USA'];
+  const customers = CUSTOMER_NAMES.map((name, i) => {
+    const [firstName, lastName = 'Doe'] = name.split(' ');
+    const cityIdx = i % CITIES.length;
+    const createdAt = new Date(now - rand(0, 200) * 24 * 60 * 60 * 1000);
+    return {
+      firstName,
+      lastName,
+      email: `${firstName!.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
+      phone: `+1 (704) 555-0${100 + i}`,
+      addresses: [
+        {
+          label: 'Home',
+          line1: `${rand(10, 999)} Market Street`,
+          city: CITIES[cityIdx]!,
+          country: COUNTRIES[cityIdx]!,
+          zip: `${rand(10000, 99999)}`,
+        },
+      ],
+      paymentMethods: [
+        {
+          brand: pick(['Visa', 'Mastercard']),
+          last4: `${rand(1000, 9999)}`,
+          expMonth: rand(1, 12),
+          expYear: 2026 + rand(0, 5),
+        },
+      ],
+      ordersCount: rand(0, 25),
+      totalSpent: rand(0, 50000) / 10,
+      createdAt,
+      updatedAt: createdAt,
+    };
+  });
+
+  await customerModel.insertMany(customers, { timestamps: false } as never);
+
   // eslint-disable-next-line no-console
   console.log(
-    `Seeded ${categories.length} categories, ${products.length} products and ${orders.length} orders.`,
+    `Seeded ${categories.length} categories, ${products.length} products, ${orders.length} orders and ${customers.length} customers.`,
   );
 
   await app.close();

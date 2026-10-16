@@ -1,10 +1,10 @@
-import { PlaceholderPage } from '@/components/common/placeholder-page';
+import { Suspense } from 'react';
+import { CustomersPageClient } from '@/features/customers/components/customers-page-client';
 
 export default function CustomersPage() {
   return (
-    <PlaceholderPage
-      title="Customers"
-      description="Your customer directory."
-    />
+    <Suspense fallback={null}>
+      <CustomersPageClient />
+    </Suspense>
   );
 }
