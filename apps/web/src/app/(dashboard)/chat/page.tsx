@@ -1,10 +1,5 @@
-import { PlaceholderPage } from '@/components/common/placeholder-page';
+import { ChatPageClient } from '@/features/chat/components/chat-page-client';
 
 export default function ChatPage() {
-  return (
-    <PlaceholderPage
-      title="Chat"
-      description="Conversations with your team."
-    />
-  );
+  return <ChatPageClient />;
 }
