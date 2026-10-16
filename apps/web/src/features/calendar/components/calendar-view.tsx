@@ -15,7 +15,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus } from 'lucide-react';
+import { addMonths, format } from 'date-fns';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -41,6 +42,7 @@ export function CalendarView() {
   const calendarRef = useRef<FullCalendar>(null);
   const [range, setRange] = useState<{ from: string; to: string } | null>(null);
   const [miniDate, setMiniDate] = useState<Date | undefined>(new Date());
+  const [miniMonth, setMiniMonth] = useState<Date>(new Date());
   const [hidden, setHidden] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<CalendarDto | null>(null);
   const [toDelete, setToDelete] = useState<CalendarDto | null>(null);
@@ -118,7 +120,10 @@ export function CalendarView() {
 
   function gotoDate(date: Date | undefined) {
     setMiniDate(date);
-    if (date) calendarRef.current?.getApi().gotoDate(date);
+    if (date) {
+      setMiniMonth(date);
+      calendarRef.current?.getApi().gotoDate(date);
+    }
   }
 
   return (
@@ -137,14 +142,37 @@ export function CalendarView() {
         </Button>
 
         <div className="rounded-xl border border-border/60 bg-card p-3 shadow-sm">
+          <div className="mb-2 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setMiniMonth((m) => addMonths(m, -1))}
+              aria-label="Previous month"
+              className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
+            <span className="text-sm font-medium">{format(miniMonth, 'MMMM yyyy')}</span>
+            <button
+              type="button"
+              onClick={() => setMiniMonth((m) => addMonths(m, 1))}
+              aria-label="Next month"
+              className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              <ChevronRight className="size-4" />
+            </button>
+          </div>
           <Calendar
             mode="single"
+            month={miniMonth}
+            onMonthChange={setMiniMonth}
             selected={miniDate}
             onSelect={gotoDate}
             className="w-full"
             classNames={{
               months: 'flex w-full flex-col gap-4',
-              month: 'flex w-full flex-col gap-4',
+              month: 'flex w-full flex-col gap-2',
+              month_caption: 'hidden',
+              nav: 'hidden',
               weekdays: 'flex w-full justify-between',
               week: 'mt-2 flex w-full justify-between',
             }}

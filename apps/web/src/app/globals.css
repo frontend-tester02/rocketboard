@@ -158,3 +158,54 @@
 .fc .fc-popover-body {
   padding: 6px;
 }
+
+/* ── Week / Day (timeGrid) views ── */
+.fc {
+  --fc-now-indicator-color: hsl(var(--danger));
+}
+.fc .fc-timegrid-slot {
+  height: 2.75rem;
+}
+.fc .fc-timegrid-slot-label-cushion,
+.fc .fc-timegrid-axis-cushion {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.72rem;
+}
+.fc .fc-timegrid-slot-minor {
+  border-top-style: dotted;
+}
+.fc .fc-timegrid-now-indicator-line {
+  border-color: hsl(var(--danger));
+  border-width: 2px 0 0;
+}
+.fc .fc-timegrid-now-indicator-arrow {
+  border-color: hsl(var(--danger));
+  color: hsl(var(--danger));
+}
+.fc .fc-timegrid-event {
+  border-radius: 6px;
+  padding: 2px 4px;
+  box-shadow: none;
+}
+.fc .fc-timegrid-event .fc-event-time {
+  font-size: 0.7rem;
+  opacity: 0.85;
+}
+.fc .fc-day-today {
+  background: hsl(var(--primary) / 0.04) !important;
+}
+
+/* Fix FullCalendar nav button focus outline + faint arrows */
+.fc .fc-button:focus,
+.fc .fc-button:focus-visible,
+.fc .fc-button-primary:focus,
+.fc .fc-button-primary:not(:disabled):active:focus {
+  outline: none;
+  box-shadow: none;
+}
+.fc .fc-button .fc-icon {
+  color: hsl(var(--foreground));
+}
+.fc .fc-button:hover .fc-icon {
+  color: hsl(var(--foreground));
+}
