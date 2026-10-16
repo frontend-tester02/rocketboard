@@ -13,6 +13,7 @@ import { envValidationSchema } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { ChatModule } from './modules/chat/chat.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import { MailboxModule } from './modules/mailbox/mailbox.module';
 import { OrdersModule } from './modules/orders/orders.module';
@@ -46,6 +47,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
     CustomersModule,
     CalendarModule,
     MailboxModule,
+    ChatModule,
     UploadsModule,
   ],
   controllers: [AppController],

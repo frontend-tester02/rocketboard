@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import type { PublicUser, UserRole } from '@rocket/shared';
-import { Model } from 'mongoose';
+import type { ChatUser, PublicUser, UserRole } from '@rocket/shared';
+import { FilterQuery, Model } from 'mongoose';
 import { User, type UserDocument } from './schemas/user.schema';
 
 export interface CreateUserData {
@@ -33,6 +33,30 @@ export class UsersService {
 
   create(data: CreateUserData) {
     return this.userModel.create(data);
+  }
+
+  /** Search users by name/email, excluding one id (for chat/contact pickers). */
+  search(term: string | undefined, excludeId: string, limit = 20) {
+    const filter: FilterQuery<UserDocument> = {
+      _id: { $ne: excludeId },
+    };
+    if (term) {
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const rx = new RegExp(escaped, 'i');
+      filter.$or = [{ firstName: rx }, { lastName: rx }, { email: rx }];
+    }
+    return this.userModel.find(filter).sort({ firstName: 1 }).limit(limit).exec();
+  }
+
+  /** Map a user document to the compact shape used by chat. */
+  toChatUser(user: UserDocument): ChatUser {
+    return {
+      id: user.id as string,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      avatar: user.avatar,
+    };
   }
 
   async setRefreshTokenHash(id: string, hash: string | null): Promise<void> {
