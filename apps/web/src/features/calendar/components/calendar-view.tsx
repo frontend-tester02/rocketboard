@@ -4,10 +4,23 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
+import type { CalendarDto } from '@rocket/shared';
+import { MoreHorizontal, Palette, Pencil, Trash2 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
+import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { Calendar } from '@/components/ui/calendar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { AddCalendarModal } from '@/features/calendar/components/add-calendar-modal';
-import { useCalendars, useEvents } from '@/features/calendar/hooks';
+import {
+  useCalendars,
+  useDeleteCalendar,
+  useEvents,
+} from '@/features/calendar/hooks';
 import { cn } from '@/lib/utils';
 
 export function CalendarView() {
@@ -15,8 +28,11 @@ export function CalendarView() {
   const [range, setRange] = useState<{ from: string; to: string } | null>(null);
   const [miniDate, setMiniDate] = useState<Date | undefined>(new Date());
   const [hidden, setHidden] = useState<Set<string>>(new Set());
+  const [editing, setEditing] = useState<CalendarDto | null>(null);
+  const [toDelete, setToDelete] = useState<CalendarDto | null>(null);
 
   const calendarsQuery = useCalendars();
+  const deleteCalendar = useDeleteCalendar();
   const eventsQuery = useEvents(range?.from ?? null, range?.to ?? null);
 
   const colorById = useMemo(() => {
@@ -84,36 +100,87 @@ export function CalendarView() {
             {calendarsQuery.data?.map((c) => {
               const shown = !hidden.has(c.id);
               return (
-                <label
-                  key={c.id}
-                  className="flex cursor-pointer items-center gap-2.5 text-sm"
-                >
-                  <input
-                    type="checkbox"
-                    checked={shown}
-                    onChange={() => toggleCalendar(c.id)}
-                    className="sr-only"
-                  />
-                  <span
-                    className={cn(
-                      'flex size-4 items-center justify-center rounded border transition-colors',
-                      shown ? 'border-transparent' : 'border-border bg-transparent',
-                    )}
-                    style={shown ? { backgroundColor: c.color } : undefined}
-                  >
-                    {shown && (
-                      <svg viewBox="0 0 12 12" className="size-3 text-white" fill="none">
-                        <path d="M2.5 6.5l2.5 2.5 4.5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                  </span>
-                  <span className={cn(!shown && 'text-muted-foreground')}>{c.name}</span>
-                </label>
+                <div key={c.id} className="group flex items-center gap-2.5 text-sm">
+                  <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5">
+                    <input
+                      type="checkbox"
+                      checked={shown}
+                      onChange={() => toggleCalendar(c.id)}
+                      className="sr-only"
+                    />
+                    <span
+                      className={cn(
+                        'flex size-4 shrink-0 items-center justify-center rounded border transition-colors',
+                        shown ? 'border-transparent' : 'border-border bg-transparent',
+                      )}
+                      style={shown ? { backgroundColor: c.color } : undefined}
+                    >
+                      {shown && (
+                        <svg viewBox="0 0 12 12" className="size-3 text-white" fill="none">
+                          <path d="M2.5 6.5l2.5 2.5 4.5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </span>
+                    <span className={cn('truncate', !shown && 'text-muted-foreground')}>
+                      {c.name}
+                    </span>
+                  </label>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      className="inline-flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground opacity-0 outline-none transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
+                      aria-label={`Options for ${c.name}`}
+                    >
+                      <MoreHorizontal className="size-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onSelect={() => setEditing(c)}>
+                        <Pencil className="size-4" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => setEditing(c)}>
+                        <Palette className="size-4" />
+                        Change color
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-danger focus:text-danger"
+                        onSelect={() => setToDelete(c)}
+                      >
+                        <Trash2 className="size-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               );
             })}
           </div>
         </div>
       </aside>
+
+      {/* Edit calendar (controlled) */}
+      <AddCalendarModal
+        calendar={editing}
+        open={editing !== null}
+        onOpenChange={(o) => !o && setEditing(null)}
+      />
+
+      <ConfirmDialog
+        open={toDelete !== null}
+        onOpenChange={(o) => !o && setToDelete(null)}
+        title="Delete calendar?"
+        description={
+          toDelete
+            ? `“${toDelete.name}” and all its events will be permanently removed.`
+            : undefined
+        }
+        confirmLabel="Delete"
+        destructive
+        onConfirm={() => {
+          if (toDelete) {
+            deleteCalendar.mutate(toDelete.id, { onSettled: () => setToDelete(null) });
+          }
+        }}
+      />
 
       {/* Calendar */}
       <div className="min-w-0 flex-1 overflow-x-auto rounded-xl border border-border/60 bg-card p-4 shadow-sm">

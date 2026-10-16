@@ -1,7 +1,8 @@
 'use client';
 
+import type { CalendarDto } from '@rocket/shared';
 import { Check, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useCreateCalendar } from '@/features/calendar/hooks';
+import { useCreateCalendar, useUpdateCalendar } from '@/features/calendar/hooks';
 import { cn } from '@/lib/utils';
 
 const COLORS = [
@@ -20,12 +21,33 @@ const COLORS = [
   '#A855F7', '#EC4899', '#14B8A6', '#EAB308',
 ];
 
-export function AddCalendarModal() {
-  const [open, setOpen] = useState(false);
+interface AddCalendarModalProps {
+  /** When provided, the modal edits this calendar instead of creating. */
+  calendar?: CalendarDto | null;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function AddCalendarModal({
+  calendar,
+  open: controlledOpen,
+  onOpenChange,
+}: AddCalendarModalProps = {}) {
+  const isControlled = controlledOpen !== undefined;
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = isControlled ? controlledOpen : internalOpen;
+  const isEdit = !!calendar;
+
   const [name, setName] = useState('');
   const [color, setColor] = useState(COLORS[0]!);
   const [error, setError] = useState<string | null>(null);
   const createCalendar = useCreateCalendar();
+  const updateCalendar = useUpdateCalendar();
+
+  function setOpen(v: boolean) {
+    if (isControlled) onOpenChange?.(v);
+    else setInternalOpen(v);
+  }
 
   function reset() {
     setName('');
@@ -33,40 +55,56 @@ export function AddCalendarModal() {
     setError(null);
   }
 
+  // Load the calendar into the form when the edit modal opens.
+  useEffect(() => {
+    if (open && calendar) {
+      setName(calendar.name);
+      setColor(calendar.color);
+      setError(null);
+    }
+  }, [open, calendar]);
+
   function submit() {
     if (!name.trim()) {
       setError('Name is required');
       return;
     }
-    createCalendar.mutate(
-      { name: name.trim(), color },
-      {
-        onSuccess: () => {
-          reset();
-          setOpen(false);
-        },
-      },
-    );
+    const onSuccess = () => {
+      if (!isEdit) reset();
+      setOpen(false);
+    };
+    if (isEdit && calendar) {
+      updateCalendar.mutate(
+        { id: calendar.id, input: { name: name.trim(), color } },
+        { onSuccess },
+      );
+    } else {
+      createCalendar.mutate({ name: name.trim(), color }, { onSuccess });
+    }
   }
+
+  const pending = createCalendar.isPending || updateCalendar.isPending;
 
   return (
     <Dialog
       open={open}
       onOpenChange={(v) => {
         setOpen(v);
-        if (!v) reset();
+        if (!v && !isEdit) reset();
       }}
     >
-      <DialogTrigger
-        className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-        aria-label="Add calendar"
-      >
-        <Plus className="size-4" />
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger
+          className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          aria-label="Add calendar"
+        >
+          <Plus className="size-4" />
+        </DialogTrigger>
+      )}
 
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Add Calendar</DialogTitle>
+          <DialogTitle>{isEdit ? 'Edit Calendar' : 'Add Calendar'}</DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
@@ -113,8 +151,8 @@ export function AddCalendarModal() {
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={submit} disabled={createCalendar.isPending}>
-            Create
+          <Button onClick={submit} disabled={pending}>
+            {isEdit ? 'Save' : 'Create'}
           </Button>
         </div>
       </DialogContent>
