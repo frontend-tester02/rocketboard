@@ -15,13 +15,27 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from '@/components/ui/popover';
 import { AddCalendarModal } from '@/features/calendar/components/add-calendar-modal';
+import { EventPreview } from '@/features/calendar/components/event-preview';
+import { NewEventModal } from '@/features/calendar/components/new-event-modal';
 import {
   useCalendars,
+  useCreateEvent,
   useDeleteCalendar,
+  useDeleteEvent,
   useEvents,
+  useUpdateEvent,
 } from '@/features/calendar/hooks';
 import { cn } from '@/lib/utils';
+import type { EventDto } from '@rocket/shared';
+import { toast } from 'sonner';
 
 export function CalendarView() {
   const calendarRef = useRef<FullCalendar>(null);
@@ -30,9 +44,44 @@ export function CalendarView() {
   const [hidden, setHidden] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<CalendarDto | null>(null);
   const [toDelete, setToDelete] = useState<CalendarDto | null>(null);
+  const [eventModalOpen, setEventModalOpen] = useState(false);
+  const [newEventDate, setNewEventDate] = useState<Date | null>(null);
+  const [preview, setPreview] = useState<EventDto | null>(null);
+  const [previewPos, setPreviewPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [editingEvent, setEditingEvent] = useState<EventDto | null>(null);
+  const [toDeleteEvent, setToDeleteEvent] = useState<EventDto | null>(null);
 
   const calendarsQuery = useCalendars();
   const deleteCalendar = useDeleteCalendar();
+  const updateEvent = useUpdateEvent();
+  const deleteEvent = useDeleteEvent();
+  const createEvent = useCreateEvent();
+
+  function confirmDeleteEvent() {
+    const ev = toDeleteEvent;
+    setToDeleteEvent(null);
+    if (!ev) return;
+    deleteEvent.mutate(ev.id, {
+      onSuccess: () => {
+        toast('Event deleted', {
+          action: {
+            label: 'Undo',
+            onClick: () =>
+              createEvent.mutate({
+                calendar: ev.calendar,
+                title: ev.title,
+                description: ev.description,
+                start: new Date(ev.start),
+                end: new Date(ev.end),
+                allDay: ev.allDay,
+                location: ev.location,
+                attendees: ev.attendees,
+              }),
+          },
+        });
+      },
+    });
+  }
   const eventsQuery = useEvents(range?.from ?? null, range?.to ?? null);
 
   const colorById = useMemo(() => {
@@ -76,6 +125,17 @@ export function CalendarView() {
     <div className="flex flex-col gap-5 lg:flex-row">
       {/* Sidebar */}
       <aside className="flex w-full shrink-0 flex-col gap-5 lg:w-72">
+        <Button
+          className="w-full gap-1.5"
+          onClick={() => {
+            setNewEventDate(null);
+            setEventModalOpen(true);
+          }}
+        >
+          <Plus className="size-4" />
+          New Event
+        </Button>
+
         <div className="rounded-xl border border-border/60 bg-card p-3 shadow-sm">
           <Calendar
             mode="single"
@@ -157,11 +217,68 @@ export function CalendarView() {
         </div>
       </aside>
 
+      {/* Event preview popover (anchored at the click point) */}
+      <Popover open={preview !== null} onOpenChange={(o) => !o && setPreview(null)}>
+        <PopoverAnchor asChild>
+          <div
+            className="pointer-events-none fixed"
+            style={{ left: previewPos.x, top: previewPos.y }}
+          />
+        </PopoverAnchor>
+        <PopoverContent align="start" className="w-72">
+          {preview && (
+            <EventPreview
+              event={preview}
+              calendarName={
+                calendarsQuery.data?.find((c) => c.id === preview.calendar)?.name
+              }
+              color={colorById.get(preview.calendar) ?? '#3E4DF5'}
+              onEdit={() => {
+                setEditingEvent(preview);
+                setPreview(null);
+              }}
+              onDelete={() => {
+                setToDeleteEvent(preview);
+                setPreview(null);
+              }}
+            />
+          )}
+        </PopoverContent>
+      </Popover>
+
+      {/* New / edit event */}
+      <NewEventModal
+        open={eventModalOpen}
+        onOpenChange={setEventModalOpen}
+        calendars={calendarsQuery.data ?? []}
+        defaultDate={newEventDate}
+      />
+      <NewEventModal
+        open={editingEvent !== null}
+        onOpenChange={(o) => !o && setEditingEvent(null)}
+        calendars={calendarsQuery.data ?? []}
+        event={editingEvent}
+      />
+
       {/* Edit calendar (controlled) */}
       <AddCalendarModal
         calendar={editing}
         open={editing !== null}
         onOpenChange={(o) => !o && setEditing(null)}
+      />
+
+      <ConfirmDialog
+        open={toDeleteEvent !== null}
+        onOpenChange={(o) => !o && setToDeleteEvent(null)}
+        title="Delete event?"
+        description={
+          toDeleteEvent
+            ? `“${toDeleteEvent.title}” will be removed. You can undo this.`
+            : undefined
+        }
+        confirmLabel="Delete"
+        destructive
+        onConfirm={confirmDeleteEvent}
       />
 
       <ConfirmDialog
@@ -195,8 +312,39 @@ export function CalendarView() {
           }}
           events={events}
           datesSet={(info) => setRange({ from: info.startStr, to: info.endStr })}
+          dateClick={(info) => {
+            setNewEventDate(info.date);
+            setEventModalOpen(true);
+          }}
+          eventClick={(info) => {
+            info.jsEvent.preventDefault();
+            const ev = eventsQuery.data?.find((e) => e.id === info.event.id);
+            if (ev) {
+              setPreviewPos({ x: info.jsEvent.clientX, y: info.jsEvent.clientY });
+              setPreview(ev);
+            }
+          }}
+          editable
+          eventDrop={(info) => {
+            const { start, end } = info.event;
+            if (!start) return;
+            updateEvent.mutate(
+              { id: info.event.id, input: { start, end: end ?? start } },
+              { onError: () => info.revert() },
+            );
+          }}
+          eventResize={(info) => {
+            const { start, end } = info.event;
+            if (!start || !end) return;
+            updateEvent.mutate(
+              { id: info.event.id, input: { start, end } },
+              { onError: () => info.revert() },
+            );
+          }}
           height="auto"
-          dayMaxEvents={3}
+          dayMaxEvents={2}
+          moreLinkClick="popover"
+          moreLinkContent={(arg) => `+${arg.num} more`}
           nowIndicator
         />
       </div>

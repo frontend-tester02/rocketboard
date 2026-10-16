@@ -134,3 +134,27 @@
   font-size: 0.75rem;
   cursor: pointer;
 }
+
+/* "+N more" link + day popover */
+.fc .fc-daygrid-more-link {
+  color: hsl(var(--primary));
+  font-weight: 500;
+  font-size: 0.72rem;
+}
+.fc .fc-popover {
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  background: hsl(var(--popover));
+  box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1);
+  overflow: hidden;
+}
+.fc .fc-popover-header {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  padding: 6px 10px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+.fc .fc-popover-body {
+  padding: 6px;
+}

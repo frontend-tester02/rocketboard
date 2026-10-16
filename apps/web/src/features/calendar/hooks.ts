@@ -106,11 +106,9 @@ export function useUpdateEvent() {
 
 export function useDeleteEvent() {
   const invalidate = useInvalidateEvents();
+  // Toast (with Undo) is handled at the call site, not here.
   return useMutation({
     mutationFn: deleteEvent,
-    onSuccess: () => {
-      invalidate();
-      toast.success('Event deleted');
-    },
+    onSuccess: invalidate,
   });
 }
