@@ -18,6 +18,7 @@ import { CustomersModule } from './modules/customers/customers.module';
 import { MailboxModule } from './modules/mailbox/mailbox.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { ProductsModule } from './modules/products/products.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 
 @Module({
@@ -48,6 +49,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
     CalendarModule,
     MailboxModule,
     ChatModule,
+    TasksModule,
     UploadsModule,
   ],
   controllers: [AppController],

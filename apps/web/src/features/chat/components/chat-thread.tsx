@@ -4,10 +4,11 @@ import type {
   ConversationDto,
   MessageDto,
   MessageNewEvent,
+  MessageReadEvent,
   TypingEvent,
 } from '@rocket/shared';
 import { format, isSameDay } from 'date-fns';
-import { Info, Loader2, Paperclip, Send, Smile } from 'lucide-react';
+import { Check, CheckCheck, Info, Loader2, Paperclip, Send, Smile } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { UserAvatar } from '@/components/common/user-avatar';
@@ -42,6 +43,9 @@ export function ChatThread({
   online: Set<string>;
 }) {
   const convId = conversation.id;
+  const otherMemberIds = conversation.members
+    .filter((m) => m.id !== meId)
+    .map((m) => m.id);
   const [messages, setMessages] = useState<MessageDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
@@ -95,6 +99,21 @@ export function ChatThread({
         scrollToBottom();
       },
       [convId, invalidateConvs, scrollToBottom],
+    ),
+  );
+
+  useSocketEvent<MessageReadEvent>(
+    'message:read',
+    useCallback(
+      (e) => {
+        if (e.conversation !== convId || e.user === meId) return;
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.readBy.includes(e.user) ? m : { ...m, readBy: [...m.readBy, e.user] },
+          ),
+        );
+      },
+      [convId, meId],
     ),
   );
 
@@ -284,11 +303,18 @@ export function ChatThread({
                       {msg.createdAt && (
                         <span
                           className={cn(
-                            'ml-2 inline-block text-[10px]',
+                            'ml-2 inline-flex items-center gap-0.5 align-bottom text-[10px]',
                             mine ? 'text-primary-foreground/70' : 'text-muted-foreground',
                           )}
                         >
                           {format(new Date(msg.createdAt), 'HH:mm')}
+                          {mine &&
+                            (otherMemberIds.length > 0 &&
+                            otherMemberIds.every((id) => msg.readBy.includes(id)) ? (
+                              <CheckCheck className="size-3" />
+                            ) : (
+                              <Check className="size-3" />
+                            ))}
                         </span>
                       )}
                     </div>

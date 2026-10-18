@@ -93,6 +93,10 @@ export interface TypingEvent {
   conversation: string;
   user: string;
 }
+export interface MessageReadEvent {
+  conversation: string;
+  user: string;
+}
 export interface PresenceEvent {
   user: string;
   online: boolean;
