@@ -4,6 +4,7 @@ import type {
   CreateConversationInput,
   MessageDto,
   SendMessageInput,
+  UpdateConversation,
 } from '@rocket/shared';
 import { apiClient } from '@/lib/api-client';
 
@@ -43,6 +44,17 @@ export async function sendMessageRest(
 ): Promise<MessageDto> {
   const { data } = await apiClient.post<Envelope<MessageDto>>(
     `/conversations/${conversationId}/messages`,
+    input,
+  );
+  return data.data;
+}
+
+export async function updateConversation(
+  conversationId: string,
+  input: UpdateConversation,
+): Promise<ConversationDto> {
+  const { data } = await apiClient.patch<Envelope<ConversationDto>>(
+    `/conversations/${conversationId}`,
     input,
   );
   return data.data;

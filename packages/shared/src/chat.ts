@@ -36,6 +36,12 @@ export const addMembersSchema = z.object({
 });
 export type AddMembers = z.infer<typeof addMembersSchema>;
 
+export const updateConversationSchema = z.object({
+  name: z.string().trim().max(80).optional(),
+  avatar: z.string().trim().url().optional(),
+});
+export type UpdateConversation = z.infer<typeof updateConversationSchema>;
+
 export const messageListQuerySchema = z.object({
   /** Message id to page before (older messages). */
   cursor: z.string().trim().optional(),

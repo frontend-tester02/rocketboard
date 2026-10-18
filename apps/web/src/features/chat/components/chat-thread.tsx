@@ -7,11 +7,18 @@ import type {
   TypingEvent,
 } from '@rocket/shared';
 import { format, isSameDay } from 'date-fns';
-import { Info, Paperclip, Send, Smile } from 'lucide-react';
+import { Info, Loader2, Paperclip, Send, Smile } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { UserAvatar } from '@/components/common/user-avatar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { getMessages } from '@/features/chat/api';
 import { ContactPanel } from '@/features/chat/components/contact-panel';
+import { uploadImage } from '@/features/uploads/api';
 import {
   convAvatarName,
   convTitle,
@@ -23,6 +30,7 @@ import { emitSocket, useSocketEvent } from '@/features/chat/use-socket';
 import { cn } from '@/lib/utils';
 
 const PAGE = 30;
+const EMOJIS = ['😀', '😁', '😂', '🤣', '😊', '😍', '😘', '😎', '🤔', '👍', '🙏', '👏', '🔥', '🎉', '❤️', '💯', '😢', '😮', '🙌', '✅', '🚀', '☕', '🎯', '💡'];
 
 export function ChatThread({
   conversation,
@@ -41,7 +49,9 @@ export function ChatThread({
   const [draft, setDraft] = useState('');
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const [showPanel, setShowPanel] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const invalidateConvs = useInvalidateConversations();
 
@@ -128,6 +138,29 @@ export function ChatThread({
     emitSocket('message:send', { conversation: convId, text });
     setDraft('');
     emitSocket('typing:stop', convId);
+  }
+
+  async function onAttach(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await uploadImage(file);
+      emitSocket('message:send', {
+        conversation: convId,
+        text: '',
+        attachments: [{ name: file.name, url: res.url, size: file.size }],
+      });
+    } catch {
+      toast.error('Upload failed (images only)');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function addEmoji(emoji: string) {
+    setDraft((d) => d + emoji);
   }
 
   async function onScroll(e: React.UIEvent<HTMLDivElement>) {
@@ -233,6 +266,20 @@ export function ChatThread({
                           : 'rounded-bl-sm bg-muted text-foreground',
                       )}
                     >
+                      {msg.attachments.length > 0 && (
+                        <div className="mb-1 flex flex-col gap-1.5">
+                          {msg.attachments.map((a) => (
+                            <a key={a.url} href={a.url} target="_blank" rel="noreferrer" className="block">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={a.url}
+                                alt={a.name}
+                                className="max-h-48 w-full rounded-lg object-cover"
+                              />
+                            </a>
+                          ))}
+                        </div>
+                      )}
                       {msg.text}
                       {msg.createdAt && (
                         <span
@@ -265,9 +312,16 @@ export function ChatThread({
       {/* Composer */}
       <div className="border-t border-border p-3">
         <div className="flex items-center gap-2 rounded-full border border-border bg-background px-2 py-1">
-          <button type="button" className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground hover:text-foreground" aria-label="Attach">
-            <Paperclip className="size-4" />
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground hover:text-foreground disabled:opacity-50"
+            aria-label="Attach image"
+          >
+            {uploading ? <Loader2 className="size-4 animate-spin" /> : <Paperclip className="size-4" />}
           </button>
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onAttach} />
           <input
             value={draft}
             onChange={(e) => onDraft(e.target.value)}
@@ -280,9 +334,28 @@ export function ChatThread({
             placeholder="Type a message…"
             className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
-          <button type="button" className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground hover:text-foreground" aria-label="Emoji">
-            <Smile className="size-4" />
-          </button>
+          <Popover>
+            <PopoverTrigger
+              className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+              aria-label="Emoji"
+            >
+              <Smile className="size-4" />
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-64 p-2">
+              <div className="grid grid-cols-8 gap-1">
+                {EMOJIS.map((e) => (
+                  <button
+                    key={e}
+                    type="button"
+                    onClick={() => addEmoji(e)}
+                    className="rounded-md p-1 text-lg transition-colors hover:bg-accent"
+                  >
+                    {e}
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
           <button
             type="button"
             onClick={send}

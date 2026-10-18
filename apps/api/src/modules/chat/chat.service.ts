@@ -5,6 +5,7 @@ import {
   type CreateConversation,
   type MessageListQuery,
   type SendMessage,
+  type UpdateConversation,
 } from '@rocket/shared';
 import { FilterQuery, Model, Types } from 'mongoose';
 import { Conversation } from './schemas/conversation.schema';
@@ -126,6 +127,18 @@ export class ChatService {
       )
       .exec();
     return message.populate('sender', MEMBER_FIELDS);
+  }
+
+  async updateConversation(userId: string, id: string, dto: UpdateConversation) {
+    const conv = await this.conversationModel.findById(id).exec();
+    if (!conv) throw new NotFoundException('Conversation not found');
+    this.ensureMember(conv, userId);
+    const updated = await this.conversationModel
+      .findByIdAndUpdate(id, dto, { new: true })
+      .populate('members', MEMBER_FIELDS)
+      .exec();
+    if (!updated) throw new NotFoundException('Conversation not found');
+    return updated;
   }
 
   async addMembers(userId: string, convId: string, members: string[]) {

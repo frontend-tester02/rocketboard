@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   Param,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -13,10 +14,12 @@ import {
   createConversationSchema,
   messageListQuerySchema,
   sendMessageSchema,
+  updateConversationSchema,
   type AddMembers,
   type CreateConversation,
   type MessageListQuery,
   type SendMessage,
+  type UpdateConversation,
 } from '@rocket/shared';
 import { CurrentUser, ParseObjectIdPipe, ZodValidationPipe } from '../../common';
 import { ChatService } from './chat.service';
@@ -69,6 +72,16 @@ export class ChatController {
     @Body(new ZodValidationPipe(sendMessageSchema)) dto: SendMessage,
   ) {
     return this.chat.sendMessage(userId, id, dto);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update a conversation (name / avatar)' })
+  update(
+    @CurrentUser('id') userId: string,
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Body(new ZodValidationPipe(updateConversationSchema)) dto: UpdateConversation,
+  ) {
+    return this.chat.updateConversation(userId, id, dto);
   }
 
   @Post(':id/members')
