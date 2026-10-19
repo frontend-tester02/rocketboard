@@ -1,18 +1,26 @@
 'use client';
 
-import { ProjectStatus, type ProjectDto } from '@rocket/shared';
-import { LayoutGrid, List, Search } from 'lucide-react';
+import { ProjectStatus, type ProjectDto, type TaskDto } from '@rocket/shared';
+import { GanttChartSquare, LayoutGrid, List, Search } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { PageHeader } from '@/components/common/page-header';
 import { SearchInput } from '@/components/common/search-input';
 import { AddProjectModal } from '@/features/projects/components/add-project-modal';
+import { GanttChart } from '@/features/projects/components/gantt-chart';
 import { ProjectCard } from '@/features/projects/components/project-card';
 import { ProjectsList } from '@/features/projects/components/projects-list';
 import { useDeleteProject, useProjectCounts, useProjects } from '@/features/projects/hooks';
+import { TaskDetailsModal } from '@/features/tasks/components/task-details-modal';
 import type { ProjectsQuery } from '@/features/projects/api';
 import { cn } from '@/lib/utils';
+
+const viewOptions = [
+  { value: 'grid', icon: LayoutGrid, label: 'Grid view' },
+  { value: 'list', icon: List, label: 'List view' },
+  { value: 'gantt', icon: GanttChartSquare, label: 'Gantt view' },
+] as const;
 
 const tabs = [
   { value: 'all', label: 'All', key: 'all' as const },
@@ -56,6 +64,7 @@ export function ProjectsPageClient() {
 
   const [editing, setEditing] = useState<ProjectDto | null>(null);
   const [toDelete, setToDelete] = useState<ProjectDto | null>(null);
+  const [openTask, setOpenTask] = useState<TaskDto | null>(null);
 
   const projects = projectsQuery.data ?? [];
 
@@ -71,22 +80,17 @@ export function ProjectsPageClient() {
         actions={
           <>
             <div className="flex items-center gap-0.5 rounded-lg border border-border/60 bg-background p-0.5">
-              <button
-                type="button"
-                onClick={() => setParams({ view: undefined })}
-                className={cn('inline-flex size-8 items-center justify-center rounded-md transition-colors', view === 'grid' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground')}
-                aria-label="Grid view"
-              >
-                <LayoutGrid className="size-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setParams({ view: 'list' })}
-                className={cn('inline-flex size-8 items-center justify-center rounded-md transition-colors', view === 'list' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground')}
-                aria-label="List view"
-              >
-                <List className="size-4" />
-              </button>
+              {viewOptions.map((o) => (
+                <button
+                  key={o.value}
+                  type="button"
+                  onClick={() => setParams({ view: o.value === 'grid' ? undefined : o.value })}
+                  className={cn('inline-flex size-8 items-center justify-center rounded-md transition-colors', view === o.value ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground')}
+                  aria-label={o.label}
+                >
+                  <o.icon className="size-4" />
+                </button>
+              ))}
             </div>
             <AddProjectModal />
           </>
@@ -125,6 +129,8 @@ export function ProjectsPageClient() {
         <div className="rounded-xl border border-border/60 bg-card px-4 py-16 text-center text-sm text-muted-foreground">Loading…</div>
       ) : projects.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-card px-4 py-16 text-center text-sm text-muted-foreground">No projects yet.</div>
+      ) : view === 'gantt' ? (
+        <GanttChart projects={projects} onOpenTask={setOpenTask} />
       ) : view === 'list' ? (
         <ProjectsList projects={projects} onOpen={onOpen} onEdit={setEditing} onDelete={setToDelete} />
       ) : (
@@ -136,6 +142,15 @@ export function ProjectsPageClient() {
       )}
 
       <AddProjectModal project={editing} open={editing !== null} onOpenChange={(o) => !o && setEditing(null)} />
+
+      {openTask && (
+        <TaskDetailsModal
+          task={openTask}
+          boardId={openTask.board}
+          open={openTask !== null}
+          onOpenChange={(o) => !o && setOpenTask(null)}
+        />
+      )}
 
       <ConfirmDialog
         open={toDelete !== null}
