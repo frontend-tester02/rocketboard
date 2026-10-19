@@ -1,10 +1,5 @@
-import { PlaceholderPage } from '@/components/common/placeholder-page';
+import { redirect } from 'next/navigation';
 
 export default function TasksPage() {
-  return (
-    <PlaceholderPage
-      title="Tasks"
-      description="Boards and task lists."
-    />
-  );
+  redirect('/tasks/board');
 }

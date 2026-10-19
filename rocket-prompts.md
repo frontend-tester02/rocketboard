@@ -251,7 +251,7 @@ Header'dagi bell uchun NotificationsDropdown: o'qilmaganlar soni badge, ro'yxat
 (ikonka/avatar, matn, vaqt), "Mark all as read", "View all". Mock data. Backend I2 da.
 [Rasm: 05]
 ```
-
+ 
 ### 06. Dashboard #3 [User Menu]
 ```
 Header'dagi avatar uchun UserMenu dropdown: ism, email, My Profile, Settings, Lock Screen,
