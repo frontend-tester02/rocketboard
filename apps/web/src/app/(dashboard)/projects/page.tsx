@@ -1,10 +1,10 @@
-import { PlaceholderPage } from '@/components/common/placeholder-page';
+import { Suspense } from 'react';
+import { ProjectsPageClient } from '@/features/projects/components/projects-page-client';
 
 export default function ProjectsPage() {
   return (
-    <PlaceholderPage
-      title="Projects"
-      description="Manage projects and progress."
-    />
+    <Suspense fallback={null}>
+      <ProjectsPageClient />
+    </Suspense>
   );
 }

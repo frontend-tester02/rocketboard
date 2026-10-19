@@ -18,6 +18,7 @@ import { CustomersModule } from './modules/customers/customers.module';
 import { MailboxModule } from './modules/mailbox/mailbox.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { ProductsModule } from './modules/products/products.module';
+import { ProjectsModule } from './modules/projects/projects.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 
@@ -50,6 +51,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
     MailboxModule,
     ChatModule,
     TasksModule,
+    ProjectsModule,
     UploadsModule,
   ],
   controllers: [AppController],

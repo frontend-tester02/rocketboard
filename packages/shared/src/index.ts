@@ -13,3 +13,4 @@ export * from './calendar';
 export * from './mail';
 export * from './chat';
 export * from './tasks';
+export * from './projects';
