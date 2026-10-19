@@ -39,9 +39,11 @@ import { cn } from '@/lib/utils';
 export function BoardView({
   board,
   onOpenTask,
+  filter,
 }: {
   board: BoardWithTasks;
   onOpenTask?: (task: TaskDto) => void;
+  filter?: (task: TaskDto) => boolean;
 }) {
   const moveTask = useMoveTask(board.id);
   const sensors = useSensors(
@@ -56,13 +58,14 @@ export function BoardView({
     const map = new Map<string, TaskDto[]>();
     columns.forEach((c) => map.set(c.id, []));
     [...board.tasks]
+      .filter((t) => (filter ? filter(t) : true))
       .sort((a, b) => a.order - b.order)
       .forEach((t) => {
         if (!map.has(t.columnId)) map.set(t.columnId, []);
         map.get(t.columnId)!.push(t);
       });
     return map;
-  }, [board.tasks, columns]);
+  }, [board.tasks, columns, filter]);
 
   function onDragEnd(e: DragEndEvent) {
     const taskId = String(e.active.id);
@@ -206,9 +209,11 @@ function Column({
   }
 
   return (
-    <div className="flex w-72 shrink-0 flex-col rounded-xl bg-muted/40 p-2">
-      <div className="flex items-center gap-2 px-2 py-1.5">
-        {column.color && <span className="size-2.5 rounded-full" style={{ background: column.color }} />}
+    <div className="flex w-72 shrink-0 flex-col gap-2">
+      <div
+        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-white"
+        style={{ background: column.color || '#6B7280' }}
+      >
         {renaming ? (
           <input
             autoFocus
@@ -219,23 +224,25 @@ function Column({
               if (e.key === 'Enter') saveRename();
               else if (e.key === 'Escape') { setColName(column.title); setRenaming(false); }
             }}
-            className="h-6 min-w-0 flex-1 rounded border border-input bg-background px-1.5 text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-6 min-w-0 flex-1 rounded border-0 bg-white/20 px-1.5 text-sm font-semibold uppercase text-white outline-none placeholder:text-white/70"
           />
         ) : (
-          <h3 className="text-sm font-semibold">{column.title}</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-wide">{column.title}</h3>
         )}
-        <span className="rounded-full bg-muted px-1.5 text-xs text-muted-foreground">{tasks.length}</span>
+        <span className="flex min-w-5 items-center justify-center rounded-full bg-white/25 px-1.5 text-xs font-semibold">
+          {tasks.length}
+        </span>
         <button
           type="button"
           onClick={() => setAdding((a) => !a)}
-          className="ml-auto inline-flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+          className="ml-auto inline-flex size-6 items-center justify-center rounded text-white/90 hover:bg-white/20"
           aria-label="Add task"
         >
           <Plus className="size-4" />
         </button>
         <DropdownMenu>
           <DropdownMenuTrigger
-            className="inline-flex size-6 items-center justify-center rounded text-muted-foreground outline-none hover:bg-accent hover:text-foreground"
+            className="inline-flex size-6 items-center justify-center rounded text-white/90 outline-none hover:bg-white/20"
             aria-label="Column options"
           >
             <MoreHorizontal className="size-4" />

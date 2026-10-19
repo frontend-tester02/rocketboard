@@ -20,3 +20,10 @@ export function labelColor(name: string): string {
   for (let i = 0; i < name.length; i++) sum += name.charCodeAt(i);
   return labelColors[sum % labelColors.length]!;
 }
+
+const labelHexes = ['#3E4DF5', '#F59E0B', '#22C55E', '#EF4444', '#A855F7', '#06B6D4'];
+export function labelHex(name: string): string {
+  let sum = 0;
+  for (let i = 0; i < name.length; i++) sum += name.charCodeAt(i);
+  return labelHexes[sum % labelHexes.length]!;
+}

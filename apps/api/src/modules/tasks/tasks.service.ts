@@ -21,8 +21,8 @@ import { TaskLabel } from './schemas/task-label.schema';
 
 function defaultColumns(): BoardColumn[] {
   return [
-    { id: randomUUID(), title: 'To Do', order: 0, color: '#9AA3B2' },
-    { id: randomUUID(), title: 'In Progress', order: 1, color: '#F7A35C' },
+    { id: randomUUID(), title: 'To Do', order: 0, color: '#F59E0B' },
+    { id: randomUUID(), title: 'In Progress', order: 1, color: '#06B6D4' },
     { id: randomUUID(), title: 'Done', order: 2, color: '#22C55E' },
   ];
 }
