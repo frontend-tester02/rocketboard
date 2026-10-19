@@ -5,15 +5,20 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
   addColumn,
+  addComment,
   createTask,
+  createTaskLabel,
   deleteTask,
+  deleteTaskLabel,
   getBoard,
   listBoards,
+  listComments,
   listTaskLabels,
   moveTask,
   removeColumn,
   updateColumn,
   updateTask,
+  updateTaskLabel,
 } from '@/features/tasks/api';
 
 export const taskKeys = {
@@ -98,6 +103,58 @@ export function useMoveTask(boardId: string) {
       if (ctx?.prev) qc.setQueryData(taskKeys.board(boardId), ctx.prev);
     },
     onSettled: () => void qc.invalidateQueries({ queryKey: taskKeys.board(boardId) }),
+  });
+}
+
+function useInvalidateLabels() {
+  const qc = useQueryClient();
+  return () => void qc.invalidateQueries({ queryKey: taskKeys.labels });
+}
+
+export function useCreateTaskLabel() {
+  const invalidate = useInvalidateLabels();
+  return useMutation({
+    mutationFn: createTaskLabel,
+    onSuccess: () => {
+      invalidate();
+      toast.success('Label created');
+    },
+  });
+}
+
+export function useUpdateTaskLabel() {
+  const invalidate = useInvalidateLabels();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: Parameters<typeof updateTaskLabel>[1] }) =>
+      updateTaskLabel(id, input),
+    onSuccess: invalidate,
+  });
+}
+
+export function useDeleteTaskLabel() {
+  const invalidate = useInvalidateLabels();
+  return useMutation({
+    mutationFn: deleteTaskLabel,
+    onSuccess: () => {
+      invalidate();
+      toast.success('Label deleted');
+    },
+  });
+}
+
+export function useComments(taskId: string | null) {
+  return useQuery({
+    queryKey: ['tasks', 'comments', taskId ?? ''],
+    queryFn: () => listComments(taskId!),
+    enabled: !!taskId,
+  });
+}
+
+export function useAddComment(taskId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (text: string) => addComment(taskId, text),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['tasks', 'comments', taskId] }),
   });
 }
 
