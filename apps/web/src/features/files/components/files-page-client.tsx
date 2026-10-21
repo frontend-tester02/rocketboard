@@ -10,7 +10,9 @@ import { Button } from '@/components/ui/button';
 import { FileCard } from '@/features/files/components/file-card';
 import { FilesBreadcrumb } from '@/features/files/components/files-breadcrumb';
 import { FolderCard } from '@/features/files/components/folder-card';
+import { MoveDialog } from '@/features/files/components/move-dialog';
 import { NameDialog } from '@/features/files/components/name-dialog';
+import { ShareDialog } from '@/features/files/components/share-dialog';
 import { StorageWidget } from '@/features/files/components/storage-widget';
 import { getDownloadUrl } from '@/features/files/api';
 import {
@@ -46,6 +48,9 @@ export function FilesPageClient({ folderId }: { folderId?: string }) {
   const [renameFile, setRenameFile] = useState<FileDto | null>(null);
   const [delFolder, setDelFolder] = useState<FolderDto | null>(null);
   const [delFile, setDelFile] = useState<FileDto | null>(null);
+  const [moveFolder, setMoveFolder] = useState<FolderDto | null>(null);
+  const [moveFile, setMoveFile] = useState<FileDto | null>(null);
+  const [shareFile, setShareFile] = useState<FileDto | null>(null);
 
   const data = contents.data;
   const folders = data?.folders ?? [];
@@ -154,6 +159,7 @@ export function FilesPageClient({ folderId }: { folderId?: string }) {
                         folder={f}
                         onOpen={() => router.push(`/files/${f.id}`)}
                         onRename={() => setRenameFolder(f)}
+                        onMove={() => setMoveFolder(f)}
                         onDelete={() => setDelFolder(f)}
                       />
                     ))}
@@ -171,8 +177,11 @@ export function FilesPageClient({ folderId }: { folderId?: string }) {
                       <FileCard
                         key={file.id}
                         file={file}
+                        onOpen={() => window.open(file.url, '_blank', 'noopener')}
                         onDownload={() => download(file)}
                         onRename={() => setRenameFile(file)}
+                        onMove={() => setMoveFile(file)}
+                        onShare={() => setShareFile(file)}
                         onToggleStar={() => updateFile.mutate({ id: file.id, input: { isStarred: !file.isStarred } })}
                         onDelete={() => setDelFile(file)}
                       />
@@ -210,6 +219,23 @@ export function FilesPageClient({ folderId }: { folderId?: string }) {
         initialValue={renameFile?.name ?? ''}
         onSubmit={(name) => renameFile && updateFile.mutate({ id: renameFile.id, input: { name } })}
       />
+
+      <MoveDialog
+        open={moveFolder !== null}
+        onOpenChange={(o) => !o && setMoveFolder(null)}
+        itemName={moveFolder?.name ?? ''}
+        excludeFolderId={moveFolder?.id}
+        currentParent={moveFolder?.parent ?? null}
+        onMove={(dest) => moveFolder && updateFolder.mutate({ id: moveFolder.id, input: { parentId: dest } })}
+      />
+      <MoveDialog
+        open={moveFile !== null}
+        onOpenChange={(o) => !o && setMoveFile(null)}
+        itemName={moveFile?.name ?? ''}
+        currentParent={moveFile?.folder ?? null}
+        onMove={(dest) => moveFile && updateFile.mutate({ id: moveFile.id, input: { folderId: dest } })}
+      />
+      <ShareDialog file={shareFile} open={shareFile !== null} onOpenChange={(o) => !o && setShareFile(null)} />
 
       <ConfirmDialog
         open={delFolder !== null}
