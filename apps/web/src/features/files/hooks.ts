@@ -7,6 +7,7 @@ import {
   createFolder,
   deleteFile,
   deleteFolder,
+  getFile,
   getStorage,
   listFiles,
   updateFile,
@@ -17,6 +18,7 @@ import {
 export const fileKeys = {
   all: ['files'] as const,
   list: (folderId?: string, starred?: boolean) => ['files', 'list', folderId ?? null, starred ?? false] as const,
+  detail: (id: string) => ['files', 'detail', id] as const,
   storage: () => ['files', 'storage'] as const,
 };
 
@@ -24,6 +26,14 @@ export function useFolderContents(folderId?: string, starred?: boolean) {
   return useQuery({
     queryKey: fileKeys.list(folderId, starred),
     queryFn: () => listFiles(folderId, starred),
+  });
+}
+
+export function useFile(id: string) {
+  return useQuery({
+    queryKey: fileKeys.detail(id),
+    queryFn: () => getFile(id),
+    enabled: Boolean(id),
   });
 }
 

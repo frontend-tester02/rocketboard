@@ -206,6 +206,13 @@ export class FilesService {
     await this.unlink(file.storageKey);
   }
 
+  async getFile(userId: string, id: string): Promise<FileDto> {
+    const owner = new Types.ObjectId(userId);
+    const file = await this.fileModel.findOne({ _id: id, owner }).exec();
+    if (!file) throw new NotFoundException('File not found');
+    return this.toFileDto(file);
+  }
+
   async download(userId: string, id: string): Promise<{ url: string; name: string }> {
     const owner = new Types.ObjectId(userId);
     const file = await this.fileModel.findOne({ _id: id, owner }).exec();

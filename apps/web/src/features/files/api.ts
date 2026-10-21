@@ -21,6 +21,11 @@ export async function listFiles(folderId?: string, starred?: boolean): Promise<F
   return data.data;
 }
 
+export async function getFile(id: string): Promise<FileDto> {
+  const { data } = await apiClient.get<Envelope<FileDto>>(`/files/${id}`);
+  return data.data;
+}
+
 export async function getStorage(): Promise<StorageUsage> {
   const { data } = await apiClient.get<Envelope<StorageUsage>>('/files/storage');
   return data.data;

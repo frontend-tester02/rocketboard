@@ -1,14 +1,15 @@
 'use client';
 
 import type { FileDto, FolderDto } from '@rocket/shared';
-import { FolderPlus, Star, Upload } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { FolderPlus, LayoutGrid, List, Star, Upload } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { PageHeader } from '@/components/common/page-header';
 import { Button } from '@/components/ui/button';
 import { FileCard } from '@/features/files/components/file-card';
 import { FilesBreadcrumb } from '@/features/files/components/files-breadcrumb';
+import { FilesTable } from '@/features/files/components/files-table';
 import { FolderCard } from '@/features/files/components/folder-card';
 import { MoveDialog } from '@/features/files/components/move-dialog';
 import { NameDialog } from '@/features/files/components/name-dialog';
@@ -29,8 +30,18 @@ import { cn } from '@/lib/utils';
 
 export function FilesPageClient({ folderId }: { folderId?: string }) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const starred = searchParams.get('starred') === '1';
+  const view = searchParams.get('view') === 'list' ? 'list' : 'grid';
+
+  function setView(next: 'grid' | 'list') {
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === 'list') params.set('view', 'list');
+    else params.delete('view');
+    const qs = params.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
+  }
 
   const contents = useFolderContents(starred ? undefined : folderId, starred);
   const storage = useStorage();
@@ -126,16 +137,27 @@ export function FilesPageClient({ folderId }: { folderId?: string }) {
           </div>
         </div>
 
-        {/* Right: breadcrumb + grid */}
+        {/* Right: breadcrumb + grid/list */}
         <div className="flex flex-col gap-4">
-          {starred ? (
-            <h2 className="flex items-center gap-2 text-sm font-semibold">
-              <Star className="size-4 text-warning" />
-              Starred files
-            </h2>
-          ) : (
-            <FilesBreadcrumb trail={data?.breadcrumbs ?? []} />
-          )}
+          <div className="flex items-center justify-between gap-3">
+            {starred ? (
+              <h2 className="flex items-center gap-2 text-sm font-semibold">
+                <Star className="size-4 text-warning" />
+                Starred files
+              </h2>
+            ) : (
+              <FilesBreadcrumb trail={data?.breadcrumbs ?? []} />
+            )}
+
+            <div className="flex shrink-0 items-center gap-1 rounded-lg border border-border/60 bg-background p-0.5">
+              <ViewToggle active={view === 'grid'} onClick={() => setView('grid')} label="Grid view">
+                <LayoutGrid className="size-4" />
+              </ViewToggle>
+              <ViewToggle active={view === 'list'} onClick={() => setView('list')} label="List view">
+                <List className="size-4" />
+              </ViewToggle>
+            </div>
+          </div>
 
           {contents.isLoading ? (
             <div className="rounded-xl border border-border/60 bg-card px-4 py-16 text-center text-sm text-muted-foreground">
@@ -145,6 +167,27 @@ export function FilesPageClient({ folderId }: { folderId?: string }) {
             <div className="rounded-xl border border-dashed border-border bg-card px-4 py-16 text-center text-sm text-muted-foreground">
               {starred ? 'No starred files.' : 'This folder is empty.'}
             </div>
+          ) : view === 'list' ? (
+            <FilesTable
+              folders={folders}
+              files={files}
+              folderActions={{
+                onOpen: (f) => router.push(`/files/${f.id}`),
+                onRename: setRenameFolder,
+                onMove: setMoveFolder,
+                onDelete: setDelFolder,
+              }}
+              fileActions={{
+                onOpen: (file) => router.push(`/files/view/${file.id}`),
+                onDownload: download,
+                onRename: setRenameFile,
+                onMove: setMoveFile,
+                onShare: setShareFile,
+                onToggleStar: (file) =>
+                  updateFile.mutate({ id: file.id, input: { isStarred: !file.isStarred } }),
+                onDelete: setDelFile,
+              }}
+            />
           ) : (
             <div className="flex flex-col gap-6">
               {folders.length > 0 && (
@@ -177,7 +220,7 @@ export function FilesPageClient({ folderId }: { folderId?: string }) {
                       <FileCard
                         key={file.id}
                         file={file}
-                        onOpen={() => window.open(file.url, '_blank', 'noopener')}
+                        onOpen={() => router.push(`/files/view/${file.id}`)}
                         onDownload={() => download(file)}
                         onRename={() => setRenameFile(file)}
                         onMove={() => setMoveFile(file)}
@@ -256,5 +299,32 @@ export function FilesPageClient({ folderId }: { folderId?: string }) {
         onConfirm={() => delFile && deleteFile.mutate(delFile.id, { onSettled: () => setDelFile(null) })}
       />
     </div>
+  );
+}
+
+function ViewToggle({
+  active,
+  onClick,
+  label,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-pressed={active}
+      className={cn(
+        'inline-flex size-8 items-center justify-center rounded-md transition-colors',
+        active ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground',
+      )}
+    >
+      {children}
+    </button>
   );
 }

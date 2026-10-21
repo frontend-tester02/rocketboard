@@ -125,6 +125,15 @@ export class FilesController {
     await this.files.removeFile(userId, id);
   }
 
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a single file by id' })
+  getFile(
+    @CurrentUser('id') userId: string,
+    @Param('id', ParseObjectIdPipe) id: string,
+  ) {
+    return this.files.getFile(userId, id);
+  }
+
   @Get(':id/download')
   @ApiOperation({ summary: 'Get a download URL for a file' })
   download(
