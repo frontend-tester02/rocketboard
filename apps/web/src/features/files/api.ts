@@ -49,12 +49,14 @@ export async function uploadFiles(
   files: File[],
   folderId?: string,
   onProgress?: (percent: number) => void,
+  signal?: AbortSignal,
 ): Promise<FileDto[]> {
   const form = new FormData();
   for (const f of files) form.append('files', f);
   const { data } = await apiClient.post<Envelope<FileDto[]>>('/files/upload', form, {
     params: folderId ? { folderId } : undefined,
     headers: { 'Content-Type': 'multipart/form-data' },
+    signal,
     onUploadProgress: (e) => {
       if (onProgress && e.total) onProgress(Math.round((e.loaded / e.total) * 100));
     },

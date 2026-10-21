@@ -3,7 +3,7 @@
 import type { FileDto, FolderDto } from '@rocket/shared';
 import { FolderPlus, LayoutGrid, List, Star, Upload } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { PageHeader } from '@/components/common/page-header';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { MoveDialog } from '@/features/files/components/move-dialog';
 import { NameDialog } from '@/features/files/components/name-dialog';
 import { ShareDialog } from '@/features/files/components/share-dialog';
 import { StorageWidget } from '@/features/files/components/storage-widget';
+import { UploadDialog } from '@/features/files/components/upload-dialog';
 import { getDownloadUrl } from '@/features/files/api';
 import {
   useCreateFolder,
@@ -24,7 +25,6 @@ import {
   useStorage,
   useUpdateFile,
   useUpdateFolder,
-  useUploadFiles,
 } from '@/features/files/hooks';
 import { cn } from '@/lib/utils';
 
@@ -51,9 +51,8 @@ export function FilesPageClient({ folderId }: { folderId?: string }) {
   const deleteFolder = useDeleteFolder();
   const updateFile = useUpdateFile();
   const deleteFile = useDeleteFile();
-  const upload = useUploadFiles();
 
-  const fileInput = useRef<HTMLInputElement>(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [renameFolder, setRenameFolder] = useState<FolderDto | null>(null);
   const [renameFile, setRenameFile] = useState<FileDto | null>(null);
@@ -82,12 +81,6 @@ export function FilesPageClient({ folderId }: { folderId?: string }) {
     }
   }
 
-  function onPickFiles(e: React.ChangeEvent<HTMLInputElement>) {
-    const picked = e.target.files ? Array.from(e.target.files) : [];
-    if (picked.length) upload.mutate({ files: picked, folderId });
-    e.target.value = '';
-  }
-
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
@@ -98,11 +91,10 @@ export function FilesPageClient({ folderId }: { folderId?: string }) {
               <FolderPlus className="size-4" />
               New Folder
             </Button>
-            <Button className="gap-1.5" onClick={() => fileInput.current?.click()} disabled={upload.isPending}>
+            <Button className="gap-1.5" onClick={() => setUploadOpen(true)}>
               <Upload className="size-4" />
-              {upload.isPending ? 'Uploading…' : 'Upload'}
+              Upload
             </Button>
-            <input ref={fileInput} type="file" multiple hidden onChange={onPickFiles} />
           </>
         }
       />
@@ -238,6 +230,7 @@ export function FilesPageClient({ folderId }: { folderId?: string }) {
       </div>
 
       {/* Dialogs */}
+      <UploadDialog open={uploadOpen} onOpenChange={setUploadOpen} folderId={folderId} />
       <NameDialog
         open={newFolderOpen}
         onOpenChange={setNewFolderOpen}
