@@ -15,3 +15,4 @@ export * from './chat';
 export * from './tasks';
 export * from './projects';
 export * from './files';
+export * from './notes';
