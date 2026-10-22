@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/common/page-header';
 import { SearchInput } from '@/components/common/search-input';
 import { Button } from '@/components/ui/button';
 import { NoteCard } from '@/features/notes/components/note-card';
+import { NoteDetailsDialog } from '@/features/notes/components/note-details-dialog';
 import {
   useCreateNote,
   useDeleteNote,
@@ -24,6 +25,7 @@ export function NotesPageClient() {
   const [search, setSearch] = useState('');
   const [tag, setTag] = useState<string | undefined>(undefined);
   const [toDelete, setToDelete] = useState<NoteDto | null>(null);
+  const [active, setActive] = useState<NoteDto | null>(null);
 
   const notesQuery = useNotes({ search: search || undefined, tag });
   const tagsQuery = useNoteTags();
@@ -36,14 +38,16 @@ export function NotesPageClient() {
   const others = notes.filter((n) => !n.isPinned);
   const tags = tagsQuery.data ?? [];
 
+  function createAndOpen() {
+    createNote.mutate({}, { onSuccess: (note) => setActive(note) });
+  }
+
   function renderCard(note: NoteDto) {
     return (
       <NoteCard
         key={note.id}
         note={note}
-        onOpen={() => {
-          /* Note details modal arrives in the next step. */
-        }}
+        onOpen={() => setActive(note)}
         onTogglePin={() => updateNote.mutate({ id: note.id, input: { isPinned: !note.isPinned } })}
         onDelete={() => setToDelete(note)}
       />
@@ -55,7 +59,7 @@ export function NotesPageClient() {
       <PageHeader
         title="Notes"
         actions={
-          <Button className="gap-1.5" onClick={() => createNote.mutate({})} disabled={createNote.isPending}>
+          <Button className="gap-1.5" onClick={createAndOpen} disabled={createNote.isPending}>
             <Plus className="size-4" />
             New Note
           </Button>
@@ -91,7 +95,7 @@ export function NotesPageClient() {
           description={search || tag ? 'Try a different search or tag.' : 'Create your first note to get started.'}
           action={
             !search && !tag ? (
-              <Button className="gap-1.5" onClick={() => createNote.mutate({})}>
+              <Button className="gap-1.5" onClick={createAndOpen}>
                 <Plus className="size-4" />
                 New Note
               </Button>
@@ -120,6 +124,12 @@ export function NotesPageClient() {
           )}
         </div>
       )}
+
+      <NoteDetailsDialog
+        note={active}
+        open={active !== null}
+        onOpenChange={(o) => !o && setActive(null)}
+      />
 
       <ConfirmDialog
         open={toDelete !== null}
