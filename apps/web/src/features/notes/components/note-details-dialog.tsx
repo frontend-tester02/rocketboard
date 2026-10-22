@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ConfirmDialog } from '@/components/common/confirm-dialog';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextEditor } from '@/features/notes/components/rich-text-editor';
 import { TagInput } from '@/features/products/components/tag-input';
 import { NOTE_COLORS, noteColor } from '@/features/notes/note-colors';
 import { useDeleteNote, useUpdateNote } from '@/features/notes/hooks';
@@ -134,12 +134,7 @@ export function NoteDetailsDialog({
               placeholder="Title"
               className="border-0 bg-transparent px-0 text-lg font-semibold shadow-none focus-visible:ring-0"
             />
-            <Textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Take a note…"
-              className="min-h-48 resize-none border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
-            />
+            <RichTextEditor value={content} onChange={setContent} />
             <TagInput value={tags} onChange={setTags} placeholder="Add a tag…" className="bg-transparent" />
           </div>
 
