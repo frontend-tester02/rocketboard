@@ -1,10 +1,5 @@
-import { PlaceholderPage } from '@/components/common/placeholder-page';
+import { NotesPageClient } from '@/features/notes/components/notes-page-client';
 
 export default function NotesPage() {
-  return (
-    <PlaceholderPage
-      title="Notes"
-      description="Capture and organize notes."
-    />
-  );
+  return <NotesPageClient />;
 }
