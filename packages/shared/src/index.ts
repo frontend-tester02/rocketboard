@@ -16,3 +16,4 @@ export * from './tasks';
 export * from './projects';
 export * from './files';
 export * from './notes';
+export * from './contacts';

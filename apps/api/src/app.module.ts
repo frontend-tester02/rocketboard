@@ -21,6 +21,7 @@ import { ProductsModule } from './modules/products/products.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { FilesModule } from './modules/files/files.module';
 import { NotesModule } from './modules/notes/notes.module';
+import { ContactsModule } from './modules/contacts/contacts.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 
@@ -56,6 +57,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
     ProjectsModule,
     FilesModule,
     NotesModule,
+    ContactsModule,
     UploadsModule,
   ],
   controllers: [AppController],
