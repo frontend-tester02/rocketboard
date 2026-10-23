@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import type { ChatUser, PublicUser, UserRole } from '@rocket/shared';
+import type { ChatUser, PublicUser, UpdateProfile, UserRole } from '@rocket/shared';
+import * as argon2 from 'argon2';
 import { FilterQuery, Model } from 'mongoose';
 import { User, type UserDocument } from './schemas/user.schema';
 
@@ -106,6 +107,44 @@ export class UsersService {
       .exec();
   }
 
+  /** Current user's full profile (for GET /users/me). */
+  async getMe(id: string): Promise<PublicUser> {
+    const user = await this.userModel.findById(id).exec();
+    if (!user) throw new NotFoundException('User not found');
+    return this.toPublic(user);
+  }
+
+  /** Public profile of any user (for GET /users/:id). */
+  async getPublic(id: string): Promise<PublicUser> {
+    const user = await this.userModel.findById(id).exec();
+    if (!user) throw new NotFoundException('User not found');
+    return this.toPublic(user);
+  }
+
+  async updateProfile(id: string, dto: UpdateProfile): Promise<PublicUser> {
+    const user = await this.userModel.findByIdAndUpdate(id, { ...dto }, { new: true }).exec();
+    if (!user) throw new NotFoundException('User not found');
+    return this.toPublic(user);
+  }
+
+  async setAvatar(id: string, avatar: string): Promise<PublicUser> {
+    const user = await this.userModel.findByIdAndUpdate(id, { avatar }, { new: true }).exec();
+    if (!user) throw new NotFoundException('User not found');
+    return this.toPublic(user);
+  }
+
+  /** Change password after verifying the current one. Invalidates refresh sessions. */
+  async changePassword(id: string, currentPassword: string, newPassword: string): Promise<void> {
+    const user = await this.findById(id, true);
+    if (!user) throw new NotFoundException('User not found');
+    const ok = await argon2.verify(user.passwordHash, currentPassword);
+    if (!ok) throw new BadRequestException('Current password is incorrect');
+    const passwordHash = await argon2.hash(newPassword);
+    await this.userModel
+      .updateOne({ _id: id }, { $set: { passwordHash }, $unset: { refreshTokenHash: '' } })
+      .exec();
+  }
+
   /** Map a user document to the safe, public shape returned by the api. */
   toPublic(user: UserDocument): PublicUser {
     return {
@@ -118,6 +157,7 @@ export class UsersService {
       jobTitle: user.jobTitle,
       phone: user.phone,
       location: user.location,
+      birthday: user.birthday ? user.birthday.toISOString() : undefined,
       isLocked: user.isLocked,
     };
   }

@@ -1,10 +1,5 @@
-import { PlaceholderPage } from '@/components/common/placeholder-page';
+import { ProfilePageClient } from '@/features/profile/components/profile-page-client';
 
 export default function ProfilePage() {
-  return (
-    <PlaceholderPage
-      title="My Profile"
-      description="Profile and account settings arrive in prompts 95–96."
-    />
-  );
+  return <ProfilePageClient />;
 }

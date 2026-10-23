@@ -97,6 +97,39 @@ export const publicUserSchema = z.object({
   jobTitle: z.string().optional(),
   phone: z.string().optional(),
   location: z.string().optional(),
+  birthday: z.string().optional(),
   isLocked: z.boolean(),
 });
 export type PublicUser = z.infer<typeof publicUserSchema>;
+
+/** Profile edit payload (My Profile → Settings). */
+export const updateProfileSchema = z.object({
+  firstName: z.string().trim().min(1, 'First name is required').max(50).optional(),
+  lastName: z.string().trim().min(1, 'Last name is required').max(50).optional(),
+  jobTitle: z.string().trim().max(100).optional(),
+  phone: z.string().trim().max(40).optional(),
+  location: z.string().trim().max(120).optional(),
+  birthday: z.coerce.date().optional(),
+});
+export type UpdateProfile = z.infer<typeof updateProfileSchema>;
+export type UpdateProfileInput = z.input<typeof updateProfileSchema>;
+
+/** Change password (My Profile → Settings), with current-password check. */
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: z.string().min(8, 'Password must be at least 8 characters').max(128),
+});
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
+/** Change-password form (UI): current + new + confirm. */
+export const changePasswordFormSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: z.string().min(8, 'Password must be at least 8 characters').max(128),
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+  })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+export type ChangePasswordFormValues = z.input<typeof changePasswordFormSchema>;
