@@ -1,10 +1,5 @@
-import { PlaceholderPage } from '@/components/common/placeholder-page';
+import { ContactsPageClient } from '@/features/contacts/components/contacts-page-client';
 
 export default function ContactsPage() {
-  return (
-    <PlaceholderPage
-      title="Contacts"
-      description="Your contact list."
-    />
-  );
+  return <ContactsPageClient />;
 }
