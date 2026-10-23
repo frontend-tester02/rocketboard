@@ -5,6 +5,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import {
   ACTIVITY_EVENT,
   ActivityEntityType,
+  NOTIFY_EVENT,
+  NotificationType,
   TaskPriority,
   type BoardColumn,
   type CreateBoard,
@@ -144,6 +146,19 @@ export class TasksService {
       entityId: String(task._id),
       meta: { title: task.title },
     });
+
+    // Notify assignees (other than the creator).
+    for (const assignee of task.assignees) {
+      if (String(assignee) === userId) continue;
+      this.events.emit(NOTIFY_EVENT, {
+        user: String(assignee),
+        type: NotificationType.TaskAssigned,
+        title: 'New task assigned',
+        body: task.title,
+        link: `/tasks/board`,
+        payload: { taskId: String(task._id) },
+      });
+    }
 
     return task;
   }

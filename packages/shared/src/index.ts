@@ -19,3 +19,4 @@ export * from './notes';
 export * from './contacts';
 export * from './activities';
 export * from './wallet';
+export * from './notifications';

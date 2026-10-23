@@ -25,6 +25,7 @@ import { NotesModule } from './modules/notes/notes.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
 import { ActivitiesModule } from './modules/activities/activities.module';
 import { WalletModule } from './modules/wallet/wallet.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 
@@ -64,6 +65,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
     ContactsModule,
     ActivitiesModule,
     WalletModule,
+    NotificationsModule,
     UploadsModule,
   ],
   controllers: [AppController],
