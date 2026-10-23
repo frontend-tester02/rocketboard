@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import type { Connection } from 'mongoose';
 import { AppController } from './app.controller';
@@ -22,6 +23,7 @@ import { ProjectsModule } from './modules/projects/projects.module';
 import { FilesModule } from './modules/files/files.module';
 import { NotesModule } from './modules/notes/notes.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
+import { ActivitiesModule } from './modules/activities/activities.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 
@@ -45,6 +47,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
         },
       }),
     }),
+    EventEmitterModule.forRoot(),
     AuthModule,
     CategoriesModule,
     ProductsModule,
@@ -58,6 +61,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
     FilesModule,
     NotesModule,
     ContactsModule,
+    ActivitiesModule,
     UploadsModule,
   ],
   controllers: [AppController],

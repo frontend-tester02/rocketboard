@@ -2,8 +2,11 @@ import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import {
+  ACTIVITY_EVENT,
+  ActivityEntityType,
   storageKindOf,
   type Breadcrumb,
   type CreateFolder,
@@ -33,6 +36,7 @@ export class FilesService {
     @InjectModel(FileEntity.name) private readonly fileModel: Model<FileEntity>,
     private readonly uploads: UploadsService,
     private readonly config: ConfigService,
+    private readonly events: EventEmitter2,
   ) {}
 
   private get baseUrl() {
@@ -181,6 +185,15 @@ export class FilesService {
         });
       }),
     );
+    for (const f of created) {
+      this.events.emit(ACTIVITY_EVENT, {
+        actor: userId,
+        action: 'uploaded',
+        entityType: ActivityEntityType.File,
+        entityId: String(f._id),
+        meta: { name: f.name },
+      });
+    }
     return created.map((f) => this.toFileDto(f));
   }
 
@@ -204,6 +217,14 @@ export class FilesService {
     const file = await this.fileModel.findOneAndDelete({ _id: id, owner }).exec();
     if (!file) throw new NotFoundException('File not found');
     await this.unlink(file.storageKey);
+
+    this.events.emit(ACTIVITY_EVENT, {
+      actor: userId,
+      action: 'deleted',
+      entityType: ActivityEntityType.File,
+      entityId: id,
+      meta: { name: file.name },
+    });
   }
 
   async getFile(userId: string, id: string): Promise<FileDto> {

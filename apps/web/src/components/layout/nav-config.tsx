@@ -10,6 +10,7 @@ import {
   ShoppingBag,
   StickyNote,
   CheckSquare,
+  Activity,
 } from 'lucide-react';
 
 export interface NavChild {
@@ -59,4 +60,5 @@ export const navItems: NavItem[] = [
   { label: 'File Manager', href: '/files', icon: HardDrive },
   { label: 'Notes', href: '/notes', icon: StickyNote },
   { label: 'Contacts', href: '/contacts', icon: Contact },
+  { label: 'Timeline', href: '/timeline', icon: Activity },
 ];

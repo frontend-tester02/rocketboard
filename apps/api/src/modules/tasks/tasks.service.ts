@@ -1,7 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import {
+  ACTIVITY_EVENT,
+  ActivityEntityType,
   TaskPriority,
   type BoardColumn,
   type CreateBoard,
@@ -35,6 +38,7 @@ export class TasksService {
     @InjectModel(TaskComment.name)
     private readonly commentModel: Model<TaskComment>,
     @InjectModel(TaskLabel.name) private readonly labelModel: Model<TaskLabel>,
+    private readonly events: EventEmitter2,
   ) {}
 
   // ── Boards ───────────────────────────────────────────────────────────────
@@ -126,12 +130,22 @@ export class TasksService {
       .select('order')
       .exec();
     const order = (last?.order ?? 0) + 1024;
-    return this.taskModel.create({
+    const task = await this.taskModel.create({
       ...dto,
       board: new Types.ObjectId(dto.board),
       assignees: dto.assignees?.map((a) => new Types.ObjectId(a)) ?? [],
       order,
     });
+
+    this.events.emit(ACTIVITY_EVENT, {
+      actor: userId,
+      action: 'created',
+      entityType: ActivityEntityType.Task,
+      entityId: String(task._id),
+      meta: { title: task.title },
+    });
+
+    return task;
   }
 
   async getTask(userId: string, id: string) {

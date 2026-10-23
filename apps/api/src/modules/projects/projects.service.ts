@@ -1,7 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import {
+  ACTIVITY_EVENT,
+  ActivityEntityType,
   ProjectStatus,
   type CreateProject,
   type ProjectCounts,
@@ -19,6 +22,7 @@ export class ProjectsService {
     @InjectModel(Project.name) private readonly projectModel: Model<Project>,
     @InjectModel(Board.name) private readonly boardModel: Model<Board>,
     @InjectModel(Task.name) private readonly taskModel: Model<Task>,
+    private readonly events: EventEmitter2,
   ) {}
 
   async list(userId: string, query: ProjectListQuery) {
@@ -89,6 +93,14 @@ export class ProjectsService {
       ],
     });
 
+    this.events.emit(ACTIVITY_EVENT, {
+      actor: userId,
+      action: 'created',
+      entityType: ActivityEntityType.Project,
+      entityId: String(project._id),
+      meta: { name: project.name },
+    });
+
     return this.withProgress(project);
   }
 
@@ -102,13 +114,21 @@ export class ProjectsService {
   }
 
   async remove(userId: string, id: string): Promise<void> {
-    await this.ensureProject(userId, id);
+    const project = await this.ensureProject(userId, id);
     const board = await this.boardModel.findOne({ project: new Types.ObjectId(id) }).exec();
     if (board) {
       await this.taskModel.deleteMany({ board: board._id }).exec();
       await this.boardModel.deleteOne({ _id: board._id }).exec();
     }
     await this.projectModel.deleteOne({ _id: id }).exec();
+
+    this.events.emit(ACTIVITY_EVENT, {
+      actor: userId,
+      action: 'deleted',
+      entityType: ActivityEntityType.Project,
+      entityId: id,
+      meta: { name: project.name },
+    });
   }
 
   /** Tasks of the project's board, with start/end for the Gantt view. */
