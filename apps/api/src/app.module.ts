@@ -27,6 +27,7 @@ import { ActivitiesModule } from './modules/activities/activities.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { ExportModule } from './modules/export/export.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 
@@ -68,6 +69,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
     WalletModule,
     NotificationsModule,
     DashboardModule,
+    ExportModule,
     UploadsModule,
   ],
   controllers: [AppController],
